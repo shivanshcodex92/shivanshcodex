@@ -1,153 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Shivanshcodex Chat</title>
-
-<!-- ================= CSS (INLINE) ================= -->
-<style>
-*{
-  box-sizing:border-box;
-  font-family:system-ui,-apple-system,BlinkMacSystemFont;
-}
-body{
-  margin:0;
-  background:#0b141a;
-  color:#e9edef;
-}
-.app{
-  max-width:420px;
-  margin:auto;
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-}
-.header{
-  background:#202c33;
-  padding:12px;
-  font-weight:600;
-}
-.sub{
-  color:#8696a0;
-  font-size:12px;
-}
-.btn{
-  background:#00a884;
-  color:white;
-  border:none;
-  padding:8px 10px;
-  border-radius:6px;
-}
-input{
-  width:100%;
-  padding:10px;
-  margin:5px 0;
-  background:#202c33;
-  border:none;
-  border-radius:6px;
-  color:white;
-}
-.section{
-  padding:12px;
-}
-.chat-list{
-  flex:1;
-  background:#111b21;
-  padding:10px;
-  overflow:auto;
-}
-.chat{
-  padding:10px;
-  border-bottom:1px solid #202c33;
-}
-.footer{
-  display:flex;
-  padding:8px;
-  background:#202c33;
-}
-.footer input{
-  flex:1;
-}
-.footer button{
-  margin-left:6px;
-}
-.center{
-  text-align:center;
-  color:#8696a0;
-}
-</style>
+  <meta charset="UTF-8" />
+  <title>Shivanshcodex Chat</title>
+  <link rel="stylesheet" href="./styles.css" />
 </head>
-
 <body>
-<div class="app">
 
-  <div class="header">
-    Shivanshcodex
-    <div class="sub">WhatsApp-like chat</div>
-  </div>
+<div id="app">
+  <header>
+    <h1>Shivanshcodex</h1>
+    <span>WhatsApp-like chat</span>
+    <button id="logoutBtn">Logout</button>
+  </header>
 
-  <div class="section">
-    <button class="btn" onclick="logout()">Logout</button>
+  <section id="auth">
+    <input id="email" placeholder="email" />
+    <input id="password" type="password" placeholder="password" />
+    <input id="username" placeholder="username" />
+    <button id="loginBtn">Login</button>
+    <button id="registerBtn">Create account</button>
+  </section>
 
-    <h3>Login</h3>
-    <input id="email" placeholder="email@example.com">
-    <input id="password" type="password" placeholder="password">
-    <input id="username" placeholder="username">
-    <button class="btn" onclick="login()">Login</button>
-    <button class="btn" onclick="register()">Create account</button>
+  <section id="chatApp" class="hidden">
+    <div class="sidebar">
+      <input id="searchUser" placeholder="Add user by username" />
+      <button id="addUserBtn">+</button>
+      <ul id="chatList"></ul>
+    </div>
 
-    <p class="sub">Tip: 2 browsers/incognito me 2 users bana ke test karo.</p>
-  </div>
-
-  <div class="chat-list" id="chatList">
-    <div class="center">Select a chat</div>
-  </div>
-
-  <div class="footer">
-    <input id="msg" placeholder="Type a message">
-    <button class="btn">▶</button>
-  </div>
-
+    <div class="chat">
+      <div id="chatHeader">Select a chat</div>
+      <div id="messages"></div>
+      <div class="inputBar">
+        <input id="messageInput" placeholder="Type a message" />
+        <button id="sendBtn">▶</button>
+      </div>
+    </div>
+  </section>
 </div>
 
-<!-- ================= FIREBASE + JS ================= -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import { getAuth,
-         createUserWithEmailAndPassword,
-         signInWithEmailAndPassword,
-         signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDS6wdYNG2Q7ZUNPjUXdOn-Sqb3cLC4NgQ",
-  authDomain: "shivanshcodex-5fa03.firebaseapp.com",
-  projectId: "shivanshcodex-5fa03",
-  storageBucket: "shivanshcodex-5fa03.firebasestorage.app",
-  messagingSenderId: "160989825267",
-  appId: "1:160989825267:web:891e3ac888a46df3920f86",
-  measurementId: "G-76T69H9HM5"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-window.register = async ()=>{
-  const e=email.value,p=password.value;
-  await createUserWithEmailAndPassword(auth,e,p);
-  alert("Registered & Logged in");
-};
-
-window.login = async ()=>{
-  const e=email.value,p=password.value;
-  await signInWithEmailAndPassword(auth,e,p);
-  alert("Logged in");
-};
-
-window.logout = async ()=>{
-  await signOut(auth);
-  alert("Logged out");
-};
-</script>
+<script type="module" src="./app.js"></script>
 </body>
 </html>
