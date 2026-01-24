@@ -2,101 +2,103 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Shivanshcodex</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-
-  <!-- TOP BAR -->
-  <header class="topbar">
+  <!-- ✅ TOP BAR (chat open pe hide hoga) -->
+  <header class="topbar" id="topbar">
     <div class="brand">
-      <div class="brandTitle">Shivanshcodex</div>
-      <div class="brandSub">WhatsApp-like chat</div>
+      <div class="title">Shivanshcodex</div>
+      <div class="subtitle">WhatsApp-like chat</div>
     </div>
 
-    <!-- ✅ Logout text removed, only icon -->
-    <button id="btnLogout" class="btn pill green logoutIcon" style="display:none;" aria-label="Logout" title="Logout">⎋</button>
+    <!-- ✅ logout icon only -->
+    <button class="btn btn-green btn-pill" id="logoutBtn" aria-label="Logout" title="Logout">
+      ⎋
+    </button>
   </header>
 
-  <main class="screen">
+  <!-- background blobs -->
+  <div class="bg">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+    <div class="noise"></div>
+  </div>
 
-    <!-- LOGIN SCREEN -->
-    <section id="screenLogin" class="card loginCard">
-      <h2 class="cardTitle">Login</h2>
+  <main class="app">
+    <!-- ✅ LOGIN CARD -->
+    <section class="card glass" id="loginCard">
+      <h2>Login</h2>
 
-      <div class="form">
-        <input id="inpUsername" class="inp" placeholder="username" autocomplete="username" />
-        <input id="inpPassword" class="inp" placeholder="password" type="password" autocomplete="current-password" />
-
-        <div class="rowBtns">
-          <button id="btnLogin" class="btn pill green">Login</button>
-          <button id="btnCreate" class="btn pill green ghost">Create</button>
-        </div>
-
-        <div class="tip">2 browsers / incognito me test karo</div>
-        <div id="loginMsg" class="msg"></div>
+      <div class="field">
+        <input id="usernameInput" type="text" placeholder="username" autocomplete="username" />
       </div>
+
+      <div class="field">
+        <input id="passwordInput" type="password" placeholder="password" autocomplete="current-password" />
+      </div>
+
+      <div class="row">
+        <button class="btn btn-green btn-pill" id="loginBtn">Login</button>
+        <button class="btn btn-green btn-pill" id="createBtn">Create</button>
+      </div>
+
+      <div class="tip">2 browsers / incognito me test karo</div>
     </section>
 
-    <!-- LIST SCREEN -->
-    <section id="screenList" class="listWrap" style="display:none;">
-      <div class="listHeader">
-        <div>
-          <div class="listTitle">Chats</div>
-          <div class="listSub" id="youLine">You: -</div>
-        </div>
+    <!-- ✅ CHAT LIST PAGE -->
+    <section class="panel glass" id="listPanel">
+      <div class="panelHead">
+        <div class="panelTitle">Chats</div>
+        <div class="panelSub">You: <span id="meName">-</span></div>
       </div>
 
       <div class="addUserRow">
-        <input id="inpAddUser" class="inp pillInp" placeholder="Add user by username" />
-        <button id="btnAddUser" class="btn round green" title="Add">+</button>
+        <input id="addUserInput" placeholder="Add user by username" />
+        <button class="btnCircle" id="addUserBtn" aria-label="Add user">+</button>
       </div>
 
-      <div id="chatList" class="chatList"></div>
+      <div class="chatList" id="chatList"></div>
 
-      <!-- Bottom tabs (dummy) -->
       <div class="bottomTabs">
-        <button class="tab active" data-tab="chats">Chats</button>
-        <button class="tab" data-tab="updates">Updates</button>
-        <button class="tab" data-tab="communities">Communities</button>
-        <button class="tab" data-tab="calls">Calls</button>
+        <button class="tab active" id="tabChats">Chats</button>
+        <button class="tab" id="tabUpdates">Updates</button>
+        <button class="tab" id="tabCommunities">Communities</button>
+        <button class="tab" id="tabCalls">Calls</button>
       </div>
     </section>
 
-    <!-- CHAT SCREEN -->
-    <section id="screenChat" class="chatWrap" style="display:none;">
-      <div class="chatHeader">
-        <button id="btnBack" class="btn round dark" title="Back">←</button>
+    <!-- ✅ DM SCREEN -->
+    <section class="dm glass" id="dmPanel">
+      <div class="dmHead">
+        <button class="iconBtn" id="backBtn" aria-label="Back">←</button>
 
-        <div class="chatHeadMid">
-          <div id="chatName" class="chatName">User</div>
-          <div id="chatStatus" class="chatStatus">Online</div>
+        <div class="dmUser">
+          <div class="dmName" id="dmName">User</div>
+          <div class="dmStatus">
+            <span class="dot"></span>
+            <span id="dmStatusText">Online</span>
+          </div>
         </div>
 
-        <button id="btnMenu" class="btn round dark" title="Menu">⋮</button>
+        <button class="iconBtn" id="menuBtn" aria-label="Menu">⋮</button>
       </div>
 
-      <div id="messages" class="messages"></div>
+      <div class="messages" id="messages"></div>
 
       <div class="composer">
-        <input id="inpMsg" class="inp msgInp" placeholder="Message" />
-        <button id="btnSend" class="btn round green sendBtn" title="Send">➤</button>
+        <input id="msgInput" placeholder="Message" />
+        <button class="sendBtn" id="sendBtn" aria-label="Send">
+          ▶
+        </button>
       </div>
     </section>
 
-    <!-- Toast -->
-    <div id="toast" class="toast"></div>
-
-    <!-- Coming soon modal -->
-    <div id="modal" class="modal" style="display:none;">
-      <div class="modalBox">
-        <div class="modalTitle">Coming soon</div>
-        <div class="modalText">Ye feature abhi available nahi hai.</div>
-        <button id="btnCloseModal" class="btn pill green">OK</button>
-      </div>
-    </div>
-
+    <!-- coming soon toast -->
+    <div class="toast" id="toast">Coming soon</div>
   </main>
 
   <script type="module" src="./app.js"></script>
