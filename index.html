@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shivanshcodex</title>
+  <link rel="stylesheet" href="./styles.css"/>
+</head>
+<body>
+  <div class="bg-live"></div>
+
+  <div class="wrap">
+    <header class="topbar">
+      <div class="brand">
+        <div class="title">Shivanshcodex</div>
+        <div class="sub">WhatsApp-like chat</div>
+      </div>
+      <button id="logoutBtn" class="btn ghost hidden">Logout</button>
+    </header>
+
+    <!-- AUTH -->
+    <section id="authView" class="card">
+      <h2 id="authTitle">Login</h2>
+
+      <div class="grid">
+        <label class="lbl">Email</label>
+        <input id="email" class="input" placeholder="email@example.com" autocomplete="email"/>
+
+        <label class="lbl">Password</label>
+        <input id="password" class="input" type="password" placeholder="••••••••" autocomplete="current-password"/>
+
+        <div id="usernameRow" class="hidden">
+          <label class="lbl">Username</label>
+          <input id="username" class="input" placeholder="shivansh3838" autocomplete="username"/>
+        </div>
+      </div>
+
+      <div class="row">
+        <button id="primaryBtn" class="btn">Login</button>
+        <button id="toggleBtn" class="btn ghost">Create account</button>
+      </div>
+
+      <div id="authMsg" class="msg"></div>
+      <div class="hint">Tip: 2 browsers/incognito me 2 users bana ke test karo.</div>
+    </section>
+
+    <!-- APP -->
+    <section id="appView" class="app hidden">
+      <aside class="sidebar card">
+        <div class="mebox">
+          <div class="meuser" id="meUser">—</div>
+          <div class="meemail" id="meEmail">—</div>
+        </div>
+
+        <div class="addbox">
+          <input id="searchUser" class="input" placeholder="Add user by username"/>
+          <button id="addUserBtn" class="btn">+</button>
+        </div>
+        <div id="statusMsg" class="msg"></div>
+
+        <div class="list" id="chatList"></div>
+      </aside>
+
+      <main class="chat card">
+        <div class="chatHeader">
+          <div class="dp" title="DP"></div>
+          <div>
+            <div class="chatTitle" id="chatTitle">Select a chat</div>
+            <div class="chatSub" id="chatSub">—</div>
+          </div>
+        </div>
+
+        <div class="messages" id="messages"></div>
+
+        <div class="composer">
+          <input id="msgInput" class="input" placeholder="Type a message" disabled />
+          <button id="sendBtn" class="btn" disabled title="Send">➤</button>
+        </div>
+      </main>
+    </section>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
