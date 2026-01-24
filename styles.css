@@ -242,8 +242,8 @@ html,body{ height:100%; margin:0; font-family: system-ui,-apple-system,Segoe UI,
   overflow:auto;
   display:flex;
   flex-direction:column;
-  justify-content:flex-end;
   gap: 10px;
+  justify-content:flex-end;
 }
 
 .bubble{
