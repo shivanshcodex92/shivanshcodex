@@ -1,149 +1,114 @@
-"use client";
-
 import {
+  addDoc,
   collection,
   doc,
   getDoc,
-  setDoc,
   getDocs,
-  query,
-  where,
-  addDoc,
-  serverTimestamp,
+  limit,
   onSnapshot,
   orderBy,
-  limit,
+  query,
+  serverTimestamp,
+  setDoc,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { getUserById } from "./auth";
 
 export type ChatDoc = {
-  chatId: string;
-  members: string[]; // [uid1, uid2]
-  memberUsernames: Record<string, string>; // uid -> username
-  createdAt: any;
-  updatedAt: any;
+  users: string[];
+  usernames: Record<string, string>; // { uid: username }
   lastMessage?: string;
   lastMessageAt?: any;
+  createdAt?: any;
 };
 
 export type MessageDoc = {
-  senderId: string;
   text: string;
+  senderId: string;
   createdAt: any;
 };
 
+// deterministic chat id (WhatsApp-like: one chat per pair)
+export function chatIdFor(a: string, b: string) {
+  return [a, b].sort().join("_");
+}
+
 export async function findUserByUsername(username: string) {
-  username = username.trim().toLowerCase();
-  const q = query(collection(db, "users"), where("username", "==", username));
-  const snap = await getDocs(q);
+  const u = username.trim().toLowerCase();
+  const qy = query(collection(db, "users"), where("username", "==", u), limit(1));
+  const snap = await getDocs(qy);
   if (snap.empty) return null;
   const d = snap.docs[0];
   return { uid: d.id, ...(d.data() as any) };
 }
 
-export function makeChatId(uidA: string, uidB: string) {
-  const [a, b] = [uidA, uidB].sort();
-  return `${a}_${b}`;
-}
-
-export function getOtherUserFromChat(chat: ChatDoc, myUid: string) {
-  const otherUid = chat.members.find((m) => m !== myUid) || "";
-  const otherUsername = chat.memberUsernames?.[otherUid] || "Chat";
-  return { otherUid, otherUsername };
-}
-
-export async function ensureChat(params: {
-  myUid: string;
-  myUsername: string;
-  otherUid: string;
-  otherUsername: string;
-}) {
-  const { myUid, myUsername, otherUid, otherUsername } = params;
-
-  const chatId = makeChatId(myUid, otherUid);
-  const ref = doc(db, "chats", chatId);
+export async function startChat(myUid: string, otherUid: string) {
+  const cid = chatIdFor(myUid, otherUid);
+  const ref = doc(db, "chats", cid);
   const snap = await getDoc(ref);
+  if (snap.exists()) return cid;
 
-  if (!snap.exists()) {
-    const chatDoc: ChatDoc = {
-      chatId,
-      members: [myUid, otherUid],
-      memberUsernames: {
-        [myUid]: myUsername,
-        [otherUid]: otherUsername,
-      },
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      lastMessage: "",
-      lastMessageAt: serverTimestamp(),
-    };
-    await setDoc(ref, chatDoc);
-  } else {
-    // ensure usernames updated (in case)
-    const data = snap.data() as ChatDoc;
-    const merged = {
-      ...data.memberUsernames,
-      [myUid]: myUsername,
-      [otherUid]: otherUsername,
-    };
-    await updateDoc(ref, { memberUsernames: merged, updatedAt: serverTimestamp() });
-  }
+  const me = await getUserById(myUid);
+  const other = await getUserById(otherUid);
 
-  return chatId;
+  await setDoc(ref, {
+    users: [myUid, otherUid],
+    usernames: {
+      [myUid]: me?.username || "me",
+      [otherUid]: other?.username || "user",
+    },
+    lastMessage: "",
+    lastMessageAt: serverTimestamp(),
+    createdAt: serverTimestamp(),
+  } satisfies ChatDoc);
+
+  return cid;
 }
 
-/**
- * Listen chats for current user.
- * NOTE: We do NOT orderBy in query to avoid composite index issues.
- * We sort client-side by updatedAt/lastMessageAt.
- */
-export function listenChats(myUid: string, cb: (chats: ChatDoc[]) => void) {
-  const q = query(collection(db, "chats"), where("members", "array-contains", myUid));
-  return onSnapshot(q, (snap) => {
-    const list = snap.docs.map((d) => d.data() as ChatDoc);
+export function listenChats(myUid: string, cb: (rows: Array<{ id: string } & ChatDoc>) => void) {
+  const qy = query(collection(db, "chats"), where("users", "array-contains", myUid));
 
-    // client-side sort: latest first
-    list.sort((a, b) => {
-      const at = (a.lastMessageAt?.seconds || a.updatedAt?.seconds || 0) as number;
-      const bt = (b.lastMessageAt?.seconds || b.updatedAt?.seconds || 0) as number;
+  return onSnapshot(qy, (snap) => {
+    const rows = snap.docs.map((d) => ({ id: d.id, ...(d.data() as ChatDoc) }));
+
+    // client sort newest first
+    rows.sort((a, b) => {
+      const at = a.lastMessageAt?.seconds ?? 0;
+      const bt = b.lastMessageAt?.seconds ?? 0;
       return bt - at;
     });
 
-    cb(list);
+    cb(rows);
   });
 }
 
-export function listenMessages(
-  chatId: string,
-  cb: (msgs: (MessageDoc & { id: string })[]) => void
-) {
-  const msgsRef = collection(db, "chats", chatId, "messages");
-  const q = query(msgsRef, orderBy("createdAt", "asc"), limit(200));
-  return onSnapshot(q, (snap) => {
+export function listenMessages(chatId: string, cb: (rows: Array<{ id: string } & MessageDoc>) => void) {
+  const qy = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt", "asc"));
+  return onSnapshot(qy, (snap) => {
     cb(snap.docs.map((d) => ({ id: d.id, ...(d.data() as MessageDoc) })));
   });
 }
 
-export async function sendMessage(params: {
-  chatId: string;
-  senderId: string;
-  text: string;
-}) {
-  const { chatId, senderId, text } = params;
-  const clean = text.trim();
-  if (!clean) return;
+export async function sendMessage(chatId: string, myUid: string, text: string) {
+  const t = text.trim();
+  if (!t) return;
 
-  const msgsRef = collection(db, "chats", chatId, "messages");
-  await addDoc(msgsRef, {
-    senderId,
-    text: clean,
+  await addDoc(collection(db, "chats", chatId, "messages"), {
+    text: t,
+    senderId: myUid,
     createdAt: serverTimestamp(),
-  } as MessageDoc);
+  } satisfies MessageDoc);
 
   await updateDoc(doc(db, "chats", chatId), {
-    lastMessage: clean,
+    lastMessage: t,
     lastMessageAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
   });
+}
+
+export function otherUsername(chat: ChatDoc, myUid: string) {
+  const otherUid = chat.users.find((u) => u !== myUid);
+  if (!otherUid) return "Chat";
+  return chat.usernames?.[otherUid] || "Chat";
 }
