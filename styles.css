@@ -1,104 +1,274 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shivanshcodex</title>
-  <link rel="stylesheet" href="./styles.css" />
-</head>
-<body>
+:root{
+  --bg1:#071c1d;
+  --bg2:#0a2e33;
+  --bg3:#0f3b3e;
+  --glass:rgba(255,255,255,.06);
+  --stroke:rgba(255,255,255,.10);
+  --text:#e9f3f2;
+  --muted:rgba(233,243,242,.7);
+  --green:#22c55e;
+  --green2:#16a34a;
+  --shadow:0 25px 70px rgba(0,0,0,.45);
+}
 
-  <!-- TOP BAR -->
-  <header class="topbar">
-    <div class="brand">
-      <div class="brandTitle">Shivanshcodex</div>
-      <div class="brandSub">WhatsApp-like chat</div>
-    </div>
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  color:var(--text);
+  background: radial-gradient(1200px 700px at 20% 15%, #0f6f6b33 0%, transparent 55%),
+              radial-gradient(900px 600px at 90% 20%, #22c55e22 0%, transparent 55%),
+              radial-gradient(900px 700px at 50% 95%, #0ea5e922 0%, transparent 55%),
+              linear-gradient(180deg, var(--bg2), var(--bg1));
+  overflow-x:hidden;
+}
 
-    <!-- ✅ Logout text removed, only icon -->
-    <button id="btnLogout" class="btn pill green logoutIcon" style="display:none;" aria-label="Logout" title="Logout">⎋</button>
-  </header>
+.bg{position:fixed; inset:0; z-index:-1; pointer-events:none;}
+.blob{position:absolute; filter:blur(40px); opacity:.55; border-radius:50%;}
+.b1{width:340px;height:340px;left:-80px;top:90px;background:#22c55e;}
+.b2{width:420px;height:420px;right:-140px;top:140px;background:#0ea5e9;}
+.b3{width:340px;height:340px;left:40%;bottom:-140px;background:#10b981;}
+.noise{position:absolute;inset:0;opacity:.06;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");}
 
-  <main class="screen">
+.topbar{
+  position:sticky; top:0;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 16px 14px;
+  background:linear-gradient(180deg, rgba(7,28,29,.85), rgba(7,28,29,.55));
+  backdrop-filter: blur(10px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.brand .title{font-size:44px; font-weight:800; letter-spacing:.3px}
+.brand .subtitle{margin-top:2px; color:var(--muted); font-size:16px}
 
-    <!-- LOGIN SCREEN -->
-    <section id="screenLogin" class="card loginCard">
-      <h2 class="cardTitle">Login</h2>
+.app{padding:18px; max-width:1100px; margin:0 auto}
+.glass{
+  background:var(--glass);
+  border:1px solid var(--stroke);
+  box-shadow:var(--shadow);
+  backdrop-filter: blur(14px);
+}
+.card{
+  width:min(560px, 100%);
+  margin:28px auto 18px;
+  padding:22px;
+  border-radius:26px;
+}
+.card h2{margin:0 0 14px; font-size:40px}
+.field input{
+  width:100%;
+  padding:18px 18px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.92);
+  font-size:18px;
+  outline:none;
+}
+.field{margin:14px 0}
+.row{display:flex; gap:12px; margin-top:12px}
+.tip{margin-top:12px; color:var(--muted); font-size:16px}
 
-      <div class="form">
-        <input id="inpUsername" class="inp" placeholder="username" autocomplete="username" />
-        <input id="inpPassword" class="inp" placeholder="password" type="password" autocomplete="current-password" />
+.btn{
+  border:none;
+  cursor:pointer;
+  user-select:none;
+  font-weight:700;
+  transition: transform .08s ease, filter .12s ease;
+}
+.btn:active{transform:scale(.98)}
+.btn-green{
+  background:linear-gradient(180deg, var(--green), var(--green2));
+  color:#05220f;
+  box-shadow:0 14px 30px rgba(34,197,94,.25);
+}
+.btn-pill{padding:16px 18px; border-radius:999px; min-width:140px; font-size:18px}
 
-        <div class="rowBtns">
-          <button id="btnLogin" class="btn pill green">Login</button>
-          <button id="btnCreate" class="btn pill green ghost">Create</button>
-        </div>
+.panel{
+  margin:14px auto;
+  width:min(980px, 100%);
+  border-radius:28px;
+  padding:16px;
+}
+.panelHead{padding:6px 8px 14px}
+.panelTitle{font-size:28px; font-weight:800}
+.panelSub{color:var(--muted); margin-top:2px}
 
-        <div class="tip">2 browsers / incognito me test karo</div>
-        <div id="loginMsg" class="msg"></div>
-      </div>
-    </section>
+.addUserRow{
+  display:flex; gap:12px; align-items:center;
+  padding:10px 6px 14px;
+}
+.addUserRow input{
+  flex:1;
+  padding:16px 18px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(0,0,0,.22);
+  color:var(--text);
+  outline:none;
+  font-size:16px;
+}
+.btnCircle{
+  width:54px;height:54px;border-radius:50%;
+  border:none; cursor:pointer;
+  background:linear-gradient(180deg, var(--green), var(--green2));
+  color:#05220f;
+  font-size:28px;
+  font-weight:900;
+  transition: transform .08s ease, filter .12s ease;
+}
+.btnCircle:active{transform:scale(.97)}
 
-    <!-- LIST SCREEN -->
-    <section id="screenList" class="listWrap" style="display:none;">
-      <div class="listHeader">
-        <div>
-          <div class="listTitle">Chats</div>
-          <div class="listSub" id="youLine">You: -</div>
-        </div>
-      </div>
+.chatList{display:flex; flex-direction:column; gap:10px; padding:8px 6px 14px; min-height:180px}
+.chatItem{
+  display:flex; gap:14px; align-items:center;
+  padding:14px 14px;
+  border-radius:22px;
+  background:rgba(0,0,0,.18);
+  border:1px solid rgba(255,255,255,.08);
+  cursor:pointer;
+  transition: transform .08s ease, background .12s ease;
+}
+.chatItem:active{transform:scale(.99)}
+.avatar{
+  width:46px;height:46px;border-radius:50%;
+  display:grid;place-items:center;
+  background:rgba(255,255,255,.10);
+  font-weight:900;
+}
+.chatMid{flex:1; min-width:0}
+.chatName{font-weight:800; font-size:18px}
+.chatLast{color:var(--muted); font-size:14px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.chatRight{display:flex; flex-direction:column; align-items:flex-end; gap:6px}
+.time{color:rgba(233,243,242,.65); font-size:12px}
+.badgeRow{display:flex; align-items:center; gap:10px}
+.onlineDot{width:10px;height:10px;border-radius:50%; background:var(--green); box-shadow:0 0 14px rgba(34,197,94,.5)}
+.unread{
+  min-width:24px; height:24px; padding:0 8px;
+  border-radius:999px;
+  background:linear-gradient(180deg, var(--green), var(--green2));
+  color:#05220f;
+  font-weight:900;
+  display:grid; place-items:center;
+  font-size:13px;
+}
 
-      <div class="addUserRow">
-        <input id="inpAddUser" class="inp pillInp" placeholder="Add user by username" />
-        <button id="btnAddUser" class="btn round green" title="Add">+</button>
-      </div>
+.bottomTabs{
+  display:flex; justify-content:space-between;
+  gap:8px; padding:10px 6px 6px;
+}
+.tab{
+  flex:1;
+  padding:12px 8px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(0,0,0,.14);
+  color:var(--muted);
+  cursor:pointer;
+}
+.tab.active{color:var(--text); background:rgba(34,197,94,.12); border-color:rgba(34,197,94,.22)}
 
-      <div id="chatList" class="chatList"></div>
+.dm{
+  display:none;
+  margin:14px auto;
+  width:min(980px, 100%);
+  border-radius:28px;
+  overflow:hidden;
+}
+.dmHead{
+  display:flex; align-items:center; gap:12px;
+  padding:14px;
+  background:rgba(0,0,0,.18);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.iconBtn{
+  width:44px;height:44px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(0,0,0,.18);
+  color:var(--text);
+  cursor:pointer;
+  font-size:20px;
+}
+.dmUser{flex:1}
+.dmName{font-size:20px; font-weight:900}
+.dmStatus{display:flex; align-items:center; gap:8px; color:var(--muted); font-size:14px}
+.dot{width:10px;height:10px;border-radius:50%; background:var(--green); box-shadow:0 0 16px rgba(34,197,94,.55)}
 
-      <!-- Bottom tabs (dummy) -->
-      <div class="bottomTabs">
-        <button class="tab active" data-tab="chats">Chats</button>
-        <button class="tab" data-tab="updates">Updates</button>
-        <button class="tab" data-tab="communities">Communities</button>
-        <button class="tab" data-tab="calls">Calls</button>
-      </div>
-    </section>
+.messages{
+  height: min(62vh, 560px);
+  overflow:auto;
+  padding:18px 14px;
+  display:flex; flex-direction:column; gap:10px;
+}
+.bubble{
+  max-width:75%;
+  padding:14px 14px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(0,0,0,.18);
+  position:relative;
+}
+.bubble.me{
+  margin-left:auto;
+  background:rgba(34,197,94,.18);
+  border-color:rgba(34,197,94,.22);
+}
+.bubble .t{font-size:16px}
+.bubble .ts{
+  margin-top:8px;
+  font-size:12px;
+  color:rgba(233,243,242,.65);
+  text-align:right;
+}
 
-    <!-- CHAT SCREEN -->
-    <section id="screenChat" class="chatWrap" style="display:none;">
-      <div class="chatHeader">
-        <button id="btnBack" class="btn round dark" title="Back">←</button>
+.composer{
+  display:flex; gap:12px; align-items:center;
+  padding:14px;
+  background:rgba(0,0,0,.18);
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.composer input{
+  flex:1;
+  padding:16px 18px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(0,0,0,.20);
+  color:var(--text);
+  outline:none;
+  font-size:16px;
+}
+.sendBtn{
+  width:56px;height:56px;border-radius:18px;
+  border:none; cursor:pointer;
+  background:linear-gradient(180deg, var(--green), var(--green2));
+  color:#05220f;
+  font-weight:900;
+  font-size:20px;
+  transition: transform .08s ease;
+}
+.sendBtn:active{transform:scale(.97)}
 
-        <div class="chatHeadMid">
-          <div id="chatName" class="chatName">User</div>
-          <div id="chatStatus" class="chatStatus">Online</div>
-        </div>
+.toast{
+  position:fixed;
+  left:50%; bottom:20px;
+  transform:translateX(-50%);
+  padding:12px 16px;
+  border-radius:999px;
+  background:rgba(0,0,0,.55);
+  border:1px solid rgba(255,255,255,.12);
+  color:var(--text);
+  display:none;
+}
 
-        <button id="btnMenu" class="btn round dark" title="Menu">⋮</button>
-      </div>
+/* ✅ Mobile layout */
+@media (max-width: 720px){
+  .brand .title{font-size:38px}
+  .card h2{font-size:34px}
+  .messages{height:58vh}
+  .btn-pill{min-width:0; flex:1}
+}
 
-      <div id="messages" class="messages"></div>
-
-      <div class="composer">
-        <input id="inpMsg" class="inp msgInp" placeholder="Message" />
-        <button id="btnSend" class="btn round green sendBtn" title="Send">➤</button>
-      </div>
-    </section>
-
-    <!-- Toast -->
-    <div id="toast" class="toast"></div>
-
-    <!-- Coming soon modal -->
-    <div id="modal" class="modal" style="display:none;">
-      <div class="modalBox">
-        <div class="modalTitle">Coming soon</div>
-        <div class="modalText">Ye feature abhi available nahi hai.</div>
-        <button id="btnCloseModal" class="btn pill green">OK</button>
-      </div>
-    </div>
-
-  </main>
-
-  <script type="module" src="./app.js"></script>
-</body>
-</html>
+/* ✅ IMPORTANT: Chat open pe topbar hide */
+body.in-chat .topbar{
+  display:none !important;
+}
