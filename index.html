@@ -2,89 +2,101 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Shivanshcodex</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
-
 <body>
-  <!-- animated background -->
-  <div class="bg" aria-hidden="true"></div>
 
+  <!-- TOP BAR -->
   <header class="topbar">
-    <div class="brandWrap">
-      <div class="brand">Shivanshcodex</div>
-      <div class="subtitle">WhatsApp-like chat</div>
+    <div class="brand">
+      <div class="brandTitle">Shivanshcodex</div>
+      <div class="brandSub">WhatsApp-like chat</div>
     </div>
-    <button id="btnLogout" class="btn pill green" style="display:none;">Logout</button>
+
+    <!-- ✅ Logout text removed, only icon -->
+    <button id="btnLogout" class="btn pill green logoutIcon" style="display:none;" aria-label="Logout" title="Logout">⎋</button>
   </header>
 
-  <!-- LOGIN SCREEN -->
-  <main id="screen-login" class="screen">
-    <section class="card loginCard">
-      <h1>Login</h1>
+  <main class="screen">
 
-      <input id="loginUsername" class="input" placeholder="username" autocomplete="username" />
-      <input id="loginPassword" class="input" placeholder="password" type="password" autocomplete="current-password" />
+    <!-- LOGIN SCREEN -->
+    <section id="screenLogin" class="card loginCard">
+      <h2 class="cardTitle">Login</h2>
 
-      <div class="row">
-        <button id="btnLogin" class="btn pill green">Login</button>
-        <button id="btnCreate" class="btn pill greenOutline">Create</button>
+      <div class="form">
+        <input id="inpUsername" class="inp" placeholder="username" autocomplete="username" />
+        <input id="inpPassword" class="inp" placeholder="password" type="password" autocomplete="current-password" />
+
+        <div class="rowBtns">
+          <button id="btnLogin" class="btn pill green">Login</button>
+          <button id="btnCreate" class="btn pill green ghost">Create</button>
+        </div>
+
+        <div class="tip">2 browsers / incognito me test karo</div>
+        <div id="loginMsg" class="msg"></div>
       </div>
-
-      <p class="tip">2 browsers / incognito me test karo</p>
-      <p id="authMsg" class="msg"></p>
     </section>
-  </main>
 
-  <!-- LIST SCREEN -->
-  <main id="screen-list" class="screen hidden">
-    <section class="card listCard">
-      <div class="listHead">
+    <!-- LIST SCREEN -->
+    <section id="screenList" class="listWrap" style="display:none;">
+      <div class="listHeader">
         <div>
-          <div class="h">Chats</div>
-          <div class="s" id="meLine">You: —</div>
+          <div class="listTitle">Chats</div>
+          <div class="listSub" id="youLine">You: -</div>
         </div>
       </div>
 
-      <div class="addRow">
-        <input id="addUsername" class="input pillInput" placeholder="Add user by username" />
-        <button id="btnAddUser" class="btn circle green" title="Start chat">+</button>
+      <div class="addUserRow">
+        <input id="inpAddUser" class="inp pillInp" placeholder="Add user by username" />
+        <button id="btnAddUser" class="btn round green" title="Add">+</button>
       </div>
 
       <div id="chatList" class="chatList"></div>
-      <p id="listMsg" class="msg"></p>
+
+      <!-- Bottom tabs (dummy) -->
+      <div class="bottomTabs">
+        <button class="tab active" data-tab="chats">Chats</button>
+        <button class="tab" data-tab="updates">Updates</button>
+        <button class="tab" data-tab="communities">Communities</button>
+        <button class="tab" data-tab="calls">Calls</button>
+      </div>
     </section>
 
-    <nav class="bottomNav">
-      <button class="navBtn active">Chats</button>
-      <button class="navBtn" id="btnUpdates">Updates</button>
-      <button class="navBtn" id="btnCommunities">Communities</button>
-      <button class="navBtn" id="btnCalls">Calls</button>
-    </nav>
-  </main>
+    <!-- CHAT SCREEN -->
+    <section id="screenChat" class="chatWrap" style="display:none;">
+      <div class="chatHeader">
+        <button id="btnBack" class="btn round dark" title="Back">←</button>
 
-  <!-- CHAT SCREEN (full page like WhatsApp) -->
-  <main id="screen-chat" class="screen hidden">
-    <section class="chatShell card">
-      <div class="chatTop">
-        <button id="btnBack" class="iconBtn" aria-label="Back">←</button>
-
-        <div class="chatTitleWrap">
-          <div id="chatTitle" class="chatTitle">Chat</div>
-          <div id="chatStatus" class="chatStatus">—</div>
+        <div class="chatHeadMid">
+          <div id="chatName" class="chatName">User</div>
+          <div id="chatStatus" class="chatStatus">Online</div>
         </div>
 
-        <button class="iconBtn" title="Menu">⋮</button>
+        <button id="btnMenu" class="btn round dark" title="Menu">⋮</button>
       </div>
 
       <div id="messages" class="messages"></div>
 
       <div class="composer">
-        <input id="msgInput" class="input msgInput" placeholder="Message" />
-        <button id="btnSend" class="btn circle green sendBtn" aria-label="Send">➤</button>
+        <input id="inpMsg" class="inp msgInp" placeholder="Message" />
+        <button id="btnSend" class="btn round green sendBtn" title="Send">➤</button>
       </div>
     </section>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Coming soon modal -->
+    <div id="modal" class="modal" style="display:none;">
+      <div class="modalBox">
+        <div class="modalTitle">Coming soon</div>
+        <div class="modalText">Ye feature abhi available nahi hai.</div>
+        <button id="btnCloseModal" class="btn pill green">OK</button>
+      </div>
+    </div>
+
   </main>
 
   <script type="module" src="./app.js"></script>
