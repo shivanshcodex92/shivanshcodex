@@ -1,82 +1,89 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Shivanshcodex</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 
 <body>
-  <div class="bgAnim"></div>
+  <!-- animated background -->
+  <div class="bg" aria-hidden="true"></div>
 
-  <!-- Top Bar -->
   <header class="topbar">
-    <div>
-      <div class="title">Shivanshcodex</div>
+    <div class="brandWrap">
+      <div class="brand">Shivanshcodex</div>
       <div class="subtitle">WhatsApp-like chat</div>
     </div>
-    <button id="logoutBtn" class="btn btn-green">Logout</button>
+    <button id="btnLogout" class="btn pill green" style="display:none;">Logout</button>
   </header>
 
-  <main class="wrap">
-    <!-- LOGIN CARD -->
-    <section id="loginCard" class="card">
-      <h2>Login</h2>
+  <!-- LOGIN SCREEN -->
+  <main id="screen-login" class="screen">
+    <section class="card loginCard">
+      <h1>Login</h1>
 
-      <input id="usernameInput" class="input" placeholder="username" autocomplete="username" />
-      <input id="passwordInput" class="input" placeholder="password" type="password" autocomplete="current-password" />
+      <input id="loginUsername" class="input" placeholder="username" autocomplete="username" />
+      <input id="loginPassword" class="input" placeholder="password" type="password" autocomplete="current-password" />
 
       <div class="row">
-        <button id="loginBtn" class="btn btn-green">Login</button>
-        <button id="createBtn" class="btn btn-green">Create account</button>
+        <button id="btnLogin" class="btn pill green">Login</button>
+        <button id="btnCreate" class="btn pill greenOutline">Create</button>
       </div>
 
-      <p class="tip">Tip: 2 browsers / incognito me test karo</p>
-      <p id="loginError" class="error"></p>
+      <p class="tip">2 browsers / incognito me test karo</p>
+      <p id="authMsg" class="msg"></p>
+    </section>
+  </main>
+
+  <!-- LIST SCREEN -->
+  <main id="screen-list" class="screen hidden">
+    <section class="card listCard">
+      <div class="listHead">
+        <div>
+          <div class="h">Chats</div>
+          <div class="s" id="meLine">You: —</div>
+        </div>
+      </div>
+
+      <div class="addRow">
+        <input id="addUsername" class="input pillInput" placeholder="Add user by username" />
+        <button id="btnAddUser" class="btn circle green" title="Start chat">+</button>
+      </div>
+
+      <div id="chatList" class="chatList"></div>
+      <p id="listMsg" class="msg"></p>
     </section>
 
-    <!-- APP -->
-    <section id="appCard" class="app" style="display:none;">
-      <!-- Left: Chats list -->
-      <aside class="sidebar">
-        <div class="sidebarHead">
-          <div>
-            <div class="sideTitle">Chats</div>
-            <div class="sideSub">You: <span id="meName">—</span></div>
-          </div>
+    <nav class="bottomNav">
+      <button class="navBtn active">Chats</button>
+      <button class="navBtn" id="btnUpdates">Updates</button>
+      <button class="navBtn" id="btnCommunities">Communities</button>
+      <button class="navBtn" id="btnCalls">Calls</button>
+    </nav>
+  </main>
+
+  <!-- CHAT SCREEN (full page like WhatsApp) -->
+  <main id="screen-chat" class="screen hidden">
+    <section class="chatShell card">
+      <div class="chatTop">
+        <button id="btnBack" class="iconBtn" aria-label="Back">←</button>
+
+        <div class="chatTitleWrap">
+          <div id="chatTitle" class="chatTitle">Chat</div>
+          <div id="chatStatus" class="chatStatus">—</div>
         </div>
 
-        <div class="addUserRow">
-          <input id="addUserInput" class="input input-dark" placeholder="Add user by username" />
-          <button id="addUserBtn" class="circleBtn" title="Add">+</button>
-        </div>
+        <button class="iconBtn" title="Menu">⋮</button>
+      </div>
 
-        <div id="chatList" class="chatList"></div>
-      </aside>
+      <div id="messages" class="messages"></div>
 
-      <!-- Right: Chat -->
-      <section class="chat">
-        <div class="chatHead">
-          <div class="chatTitleWrap">
-            <div id="chatName" class="chatName">Select a chat</div>
-            <div id="chatStatus" class="chatStatus">—</div>
-          </div>
-          <button id="menuBtn" class="iconBtn" title="Menu">⋮</button>
-        </div>
-
-        <div id="messages" class="messages">
-          <div id="emptyState" class="emptyState">Select a chat</div>
-        </div>
-
-        <!-- ✅ composer wrapper (hidden by default, show only when a chat is opened) -->
-        <div id="composerWrap" class="composer" style="display:none;">
-          <input id="messageInput" class="input input-dark" placeholder="Message" />
-          <button id="sendBtn" class="sendBtn" title="Send">
-            <span class="sendIcon">➤</span>
-          </button>
-        </div>
-      </section>
+      <div class="composer">
+        <input id="msgInput" class="input msgInput" placeholder="Message" />
+        <button id="btnSend" class="btn circle green sendBtn" aria-label="Send">➤</button>
+      </div>
     </section>
   </main>
 
