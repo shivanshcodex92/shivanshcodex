@@ -1,118 +1,85 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <title>Shivanshcodex</title>
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shivanshcodex</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
 
-  <body>
-    <!-- Animated background layers -->
-    <div class="bg"></div>
-    <div class="bg2"></div>
+<body>
+  <div class="bgAnim"></div>
 
-    <!-- TOP BAR -->
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-title">Shivanshcodex</div>
-        <div class="brand-sub">WhatsApp-like chat</div>
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div>
+      <div class="title">Shivanshcodex</div>
+      <div class="subtitle">WhatsApp-like chat</div>
+    </div>
+    <button id="logoutBtn" class="btn btn-green">Logout</button>
+  </header>
+
+  <main class="wrap">
+    <!-- LOGIN CARD -->
+    <section id="loginCard" class="card">
+      <h2>Login</h2>
+
+      <input id="usernameInput" class="input" placeholder="username" autocomplete="username" />
+      <input id="passwordInput" class="input" placeholder="password" type="password" autocomplete="current-password" />
+
+      <div class="row">
+        <button id="loginBtn" class="btn btn-green">Login</button>
+        <button id="createBtn" class="btn btn-green">Create account</button>
       </div>
 
-      <button id="logoutBtn" class="btn btn-green btn-pill" style="display:none;">
-        Logout
-      </button>
-    </header>
+      <p class="tip">Tip: 2 browsers / incognito me test karo</p>
+      <p id="loginError" class="error"></p>
+    </section>
 
-    <!-- LOGIN SCREEN -->
-    <main id="loginScreen" class="screen">
-      <div class="centerWrap">
-        <section class="card login-card" id="loginBox">
-          <h2 class="card-title">Login</h2>
-
-          <label class="field">
-            <span>Username</span>
-            <input id="username" class="input" placeholder="username" autocomplete="username" />
-          </label>
-
-          <label class="field">
-            <span>Password</span>
-            <input id="password" class="input" type="password" placeholder="password" autocomplete="current-password" />
-          </label>
-
-          <div class="row gap">
-            <button id="loginBtn" class="btn btn-green btn-pill flex1">Login</button>
-            <button id="signupBtn" class="btn btn-green btn-pill flex1">Create</button>
+    <!-- APP -->
+    <section id="appCard" class="app" style="display:none;">
+      <!-- Left: Chats list -->
+      <aside class="sidebar">
+        <div class="sidebarHead">
+          <div>
+            <div class="sideTitle">Chats</div>
+            <div class="sideSub">You: <span id="meName">—</span></div>
           </div>
+        </div>
 
-          <div id="loginMsg" class="hint">
-            Tip: 2 browsers / incognito me test karo
+        <div class="addUserRow">
+          <input id="addUserInput" class="input input-dark" placeholder="Add user by username" />
+          <button id="addUserBtn" class="circleBtn" title="Add">+</button>
+        </div>
+
+        <div id="chatList" class="chatList"></div>
+      </aside>
+
+      <!-- Right: Chat -->
+      <section class="chat">
+        <div class="chatHead">
+          <div class="chatTitleWrap">
+            <div id="chatName" class="chatName">Select a chat</div>
+            <div id="chatStatus" class="chatStatus">—</div>
           </div>
-        </section>
-      </div>
-    </main>
+          <button id="menuBtn" class="iconBtn" title="Menu">⋮</button>
+        </div>
 
-    <!-- APP SCREEN -->
-    <main id="appScreen" class="screen" style="display:none;">
-      <div class="appShell">
-        <!-- LEFT: Chat List -->
-        <aside class="panel chatsPanel" id="chatsPanel">
-          <div class="panelHeader">
-            <div class="panelTitle">Chats</div>
-            <div class="panelMini" id="meLabel"></div>
-          </div>
+        <div id="messages" class="messages">
+          <div id="emptyState" class="emptyState">Select a chat</div>
+        </div>
 
-          <div class="addUserWrap">
-            <input id="addUserInput" class="input input-dark" placeholder="Add user by username" />
-            <button id="addUserBtn" class="iconBtn" title="Add">+</button>
-          </div>
+        <!-- ✅ composer wrapper (hidden by default, show only when a chat is opened) -->
+        <div id="composerWrap" class="composer" style="display:none;">
+          <input id="messageInput" class="input input-dark" placeholder="Message" />
+          <button id="sendBtn" class="sendBtn" title="Send">
+            <span class="sendIcon">➤</span>
+          </button>
+        </div>
+      </section>
+    </section>
+  </main>
 
-          <div id="chatList" class="chatList"></div>
-        </aside>
-
-        <!-- RIGHT: Chat -->
-        <section class="panel chatPanel">
-          <div class="chatHeader" id="chatHeader">
-            <div class="chatHeaderLeft">
-              <div class="avatar" id="chatAvatar">?</div>
-              <div>
-                <div class="chatName" id="chatName">Select a chat</div>
-                <div class="chatStatus" id="chatStatus">—</div>
-              </div>
-            </div>
-
-            <div class="chatHeaderRight">
-              <button id="moreBtn" class="btn btn-soft">⋮</button>
-            </div>
-          </div>
-
-          <div id="messages" class="messages">
-            <div class="emptyState">Select a chat to start messaging</div>
-          </div>
-
-          <div class="composer">
-            <input id="messageInput" class="input input-dark" placeholder="Message" />
-            <button id="sendBtn" class="sendBtn" title="Send">
-              <span class="sendIcon">➤</span>
-            </button>
-          </div>
-        </section>
-      </div>
-
-      <!-- Bottom tabs (Coming Soon) -->
-      <nav class="tabs">
-        <button class="tab active" data-tab="chats">Chats</button>
-        <button class="tab" data-tab="updates">Updates</button>
-        <button class="tab" data-tab="communities">Communities</button>
-        <button class="tab" data-tab="calls">Calls</button>
-      </nav>
-
-      <div id="toast" class="toast" style="display:none;"></div>
-    </main>
-
-    <script type="module" src="./app.js"></script>
-  </body>
+  <script type="module" src="./app.js"></script>
+</body>
 </html>
