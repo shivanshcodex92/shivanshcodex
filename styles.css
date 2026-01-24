@@ -1,60 +1,62 @@
 * {
   box-sizing: border-box;
-  font-family: system-ui, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
 }
 
 body {
   margin: 0;
   height: 100vh;
-  background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364);
-  background-size: 400% 400%;
-  animation: bg 10s ease infinite;
+  background: linear-gradient(135deg, #0b141a, #111b21, #202c33);
   color: white;
 }
 
-@keyframes bg {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
+/* HEADER */
 .topbar {
+  height: 60px;
+  padding: 10px 15px;
+  background: #202c33;
   display: flex;
   justify-content: space-between;
-  padding: 15px;
-  background: rgba(0,0,0,0.4);
+  align-items: center;
 }
 
-.topbar h1 { margin: 0; }
-.topbar p { margin: 0; font-size: 12px; }
+.topbar h1 {
+  font-size: 20px;
+  margin: 0;
+}
+
+.topbar p {
+  font-size: 12px;
+  opacity: 0.7;
+}
 
 button {
   background: #25d366;
   border: none;
   padding: 10px 14px;
-  border-radius: 6px;
-  color: black;
+  border-radius: 20px;
   font-weight: bold;
   cursor: pointer;
-  transition: transform .1s;
 }
 
-button:active { transform: scale(0.95); }
+button:active {
+  transform: scale(0.95);
+}
 
+/* LOGIN */
 .card {
-  max-width: 400px;
-  margin: 40px auto;
-  background: rgba(0,0,0,0.5);
+  margin: 20px;
   padding: 20px;
-  border-radius: 10px;
+  background: #202c33;
+  border-radius: 12px;
 }
 
 input {
   width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  border-radius: 6px;
+  padding: 14px;
+  border-radius: 8px;
   border: none;
+  margin-bottom: 10px;
 }
 
 .row {
@@ -62,22 +64,28 @@ input {
   gap: 10px;
 }
 
-.hidden { display: none; }
-
-.chat-container {
-  display: flex;
-  height: calc(100vh - 70px);
+.hidden {
+  display: none;
 }
 
+/* CHAT APP */
+.chat-app {
+  display: flex;
+  height: calc(100vh - 60px);
+}
+
+/* SIDEBAR */
 .sidebar {
-  width: 30%;
-  background: rgba(0,0,0,0.4);
+  width: 35%;
+  background: #111b21;
   padding: 10px;
+  overflow-y: auto;
 }
 
 .add-user {
   display: flex;
   gap: 6px;
+  margin-bottom: 10px;
 }
 
 #chatList {
@@ -87,48 +95,71 @@ input {
 
 #chatList li {
   padding: 12px;
-  margin: 5px 0;
-  background: rgba(255,255,255,0.1);
-  border-radius: 6px;
-  cursor: pointer;
+  background: #202c33;
+  border-radius: 10px;
+  margin-bottom: 8px;
 }
 
-.chat-area {
-  width: 70%;
+/* CHAT SCREEN */
+.chat-screen {
+  width: 65%;
+  display: flex;
+  flex-direction: column;
+  background: #0b141a;
+}
+
+.chat-header {
+  padding: 12px;
+  background: #202c33;
+  font-weight: bold;
+}
+
+.messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
 
-#chatHeader {
-  padding: 10px;
-  background: rgba(0,0,0,0.4);
-}
-
-#messages {
-  flex: 1;
-  padding: 10px;
-  overflow-y: auto;
-}
-
 .msg {
-  max-width: 70%;
-  padding: 10px;
-  margin: 6px 0;
-  border-radius: 10px;
+  max-width: 75%;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  word-wrap: break-word;
 }
 
 .me {
+  align-self: flex-end;
   background: #25d366;
   color: black;
-  align-self: flex-end;
 }
 
 .other {
-  background: #333;
+  align-self: flex-start;
+  background: #202c33;
 }
 
+/* SEND BOX */
 .send-box {
   display: flex;
   padding: 10px;
   gap: 6px;
+  background: #202c33;
+}
+
+.send-box input {
+  flex: 1;
+  border-radius: 20px;
+}
+
+/* 📱 MOBILE FIX */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 40%;
+  }
+  .chat-screen {
+    width: 60%;
+  }
 }
