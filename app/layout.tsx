@@ -1,14 +1,11 @@
 import "./globals.css";
 
-export const metadata = {
-  title: "Shivanshcodex Chat",
-  description: "WhatsApp-like chat",
-};
+export const metadata = { title: "Shivanshcodex" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="bg-live">{children}</body>
     </html>
   );
 }
