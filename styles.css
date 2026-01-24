@@ -1,7 +1,6 @@
 :root{
   --bg1:#071c1d;
   --bg2:#0a2e33;
-  --bg3:#0f3b3e;
   --glass:rgba(255,255,255,.06);
   --stroke:rgba(255,255,255,.10);
   --text:#e9f3f2;
@@ -31,8 +30,11 @@ body{
 .b3{width:340px;height:340px;left:40%;bottom:-140px;background:#10b981;}
 .noise{position:absolute;inset:0;opacity:.06;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");}
 
+/* ✅ topbar fixed + corner logout */
 .topbar{
-  position:sticky; top:0;
+  position:fixed;
+  top:0; left:0; right:0;
+  z-index:50;
   display:flex; align-items:center; justify-content:space-between;
   padding:16px 16px 14px;
   background:linear-gradient(180deg, rgba(7,28,29,.85), rgba(7,28,29,.55));
@@ -42,13 +44,17 @@ body{
 .brand .title{font-size:44px; font-weight:800; letter-spacing:.3px}
 .brand .subtitle{margin-top:2px; color:var(--muted); font-size:16px}
 
-.app{padding:18px; max-width:1100px; margin:0 auto}
+/* content below topbar */
+.app{padding:110px 18px 18px; max-width:1100px; margin:0 auto}
+
 .glass{
   background:var(--glass);
   border:1px solid var(--stroke);
   box-shadow:var(--shadow);
   backdrop-filter: blur(14px);
 }
+
+/* login */
 .card{
   width:min(560px, 100%);
   margin:28px auto 18px;
@@ -69,6 +75,7 @@ body{
 .row{display:flex; gap:12px; margin-top:12px}
 .tip{margin-top:12px; color:var(--muted); font-size:16px}
 
+/* buttons */
 .btn{
   border:none;
   cursor:pointer;
@@ -77,11 +84,24 @@ body{
   transition: transform .08s ease, filter .12s ease;
 }
 .btn:active{transform:scale(.98)}
+
 .btn-green{
   background:linear-gradient(180deg, var(--green), var(--green2));
   color:#05220f;
   box-shadow:0 14px 30px rgba(34,197,94,.25);
 }
+
+/* ✅ logout icon fixed size */
+#logoutBtn{
+  width:56px;
+  height:56px;
+  border-radius:18px;
+  display:grid;
+  place-items:center;
+  font-size:22px;
+  padding:0;
+}
+
 .btn-pill{padding:16px 18px; border-radius:999px; min-width:140px; font-size:18px}
 
 .panel{
@@ -206,7 +226,6 @@ body{
   border-radius:18px;
   border:1px solid rgba(255,255,255,.08);
   background:rgba(0,0,0,.18);
-  position:relative;
 }
 .bubble.me{
   margin-left:auto;
@@ -260,15 +279,13 @@ body{
   display:none;
 }
 
-/* ✅ Mobile layout */
+/* ✅ DM open pe header hide */
+body.in-chat .topbar{ display:none !important; }
+
+/* ✅ Mobile */
 @media (max-width: 720px){
   .brand .title{font-size:38px}
   .card h2{font-size:34px}
   .messages{height:58vh}
   .btn-pill{min-width:0; flex:1}
-}
-
-/* ✅ IMPORTANT: Chat open pe topbar hide */
-body.in-chat .topbar{
-  display:none !important;
 }
