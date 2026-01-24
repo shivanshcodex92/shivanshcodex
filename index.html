@@ -7,21 +7,19 @@
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <!-- ✅ TOP BAR (chat open pe hide hoga) -->
+  <!-- ✅ TOP BAR -->
   <header class="topbar" id="topbar">
     <div class="brand">
       <div class="title">Shivanshcodex</div>
       <div class="subtitle">WhatsApp-like chat</div>
     </div>
 
-    <!-- ✅ logout icon only -->
-    <button class="btn btn-green btn-pill" id="logoutBtn" aria-label="Logout" title="Logout">
-      ⎋
-    </button>
+    <!-- ✅ logout icon only (corner) -->
+    <button class="btn btn-green" id="logoutBtn" aria-label="Logout" title="Logout">⎋</button>
   </header>
 
   <!-- background blobs -->
-  <div class="bg">
+  <div class="bg" aria-hidden="true">
     <div class="blob b1"></div>
     <div class="blob b2"></div>
     <div class="blob b3"></div>
@@ -29,7 +27,7 @@
   </div>
 
   <main class="app">
-    <!-- ✅ LOGIN CARD -->
+    <!-- ✅ LOGIN -->
     <section class="card glass" id="loginCard">
       <h2>Login</h2>
 
@@ -49,7 +47,7 @@
       <div class="tip">2 browsers / incognito me test karo</div>
     </section>
 
-    <!-- ✅ CHAT LIST PAGE -->
+    <!-- ✅ CHAT LIST -->
     <section class="panel glass" id="listPanel">
       <div class="panelHead">
         <div class="panelTitle">Chats</div>
@@ -71,7 +69,7 @@
       </div>
     </section>
 
-    <!-- ✅ DM SCREEN -->
+    <!-- ✅ DM -->
     <section class="dm glass" id="dmPanel">
       <div class="dmHead">
         <button class="iconBtn" id="backBtn" aria-label="Back">←</button>
@@ -91,13 +89,10 @@
 
       <div class="composer">
         <input id="msgInput" placeholder="Message" />
-        <button class="sendBtn" id="sendBtn" aria-label="Send">
-          ▶
-        </button>
+        <button class="sendBtn" id="sendBtn" aria-label="Send">▶</button>
       </div>
     </section>
 
-    <!-- coming soon toast -->
     <div class="toast" id="toast">Coming soon</div>
   </main>
 
