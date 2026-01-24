@@ -6,7 +6,7 @@ import {
   query, where, orderBy, limit, onSnapshot, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-/** ✅ FIREBASE CONFIG (your API) */
+/** ✅ YOUR FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyDS6wdYNG2Q7ZUNPjUXdOn-Sqb3cLC4NgQ",
   authDomain: "shivanshcodex-5fa03.firebaseapp.com",
@@ -20,7 +20,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/** ✅ UI */
+/** UI */
 const usernameInput = document.getElementById("usernameInput");
 const passwordInput = document.getElementById("passwordInput");
 const loginBtn = document.getElementById("loginBtn");
@@ -43,26 +43,21 @@ const messagesEl = document.getElementById("messages");
 const msgInput = document.getElementById("msgInput");
 const sendBtn = document.getElementById("sendBtn");
 
-const tabUpdates = document.getElementById("tabUpdates");
-const tabCommunities = document.getElementById("tabCommunities");
-const tabCalls = document.getElementById("tabCalls");
 const toast = document.getElementById("toast");
 
-/** ✅ Local session */
-let me = null; // { uid, username }
-let activeChat = null; // { chatId, otherUid, otherUsername }
+let me = null;                  // { uid, username }
+let activeChat = null;          // { chatId, otherUid, otherUsername }
 let unsubMessages = null;
 let unsubChats = null;
 
-/** Helpers */
-const toastShow = (txt="Coming soon")=>{
-  toast.textContent = txt;
+/** helpers */
+const toastShow = (txt)=>{
+  toast.textContent = txt || "Coming soon";
   toast.style.display = "block";
   setTimeout(()=>toast.style.display="none", 1400);
 };
 
 const hash = async (s)=>{
-  // simple hash (not secure). ok for demo
   let h = 0;
   for (let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) >>> 0;
   return String(h);
@@ -72,10 +67,12 @@ const setAuthUI = (loggedIn)=>{
   if (loggedIn){
     loginCard.style.display = "none";
     listPanel.style.display = "block";
+    logoutBtn.style.display = "grid";
   } else {
     loginCard.style.display = "block";
     listPanel.style.display = "none";
     dmPanel.style.display = "none";
+    logoutBtn.style.display = "none";
     document.body.classList.remove("in-chat");
   }
 };
@@ -84,7 +81,7 @@ const openDMUI = (open)=>{
   if (open){
     dmPanel.style.display = "block";
     listPanel.style.display = "none";
-    document.body.classList.add("in-chat"); // ✅ top header hide
+    document.body.classList.add("in-chat");
   } else {
     dmPanel.style.display = "none";
     listPanel.style.display = "block";
@@ -92,21 +89,13 @@ const openDMUI = (open)=>{
   }
 };
 
-const nowTime = ()=>{
-  const d = new Date();
-  let h = d.getHours();
-  const m = String(d.getMinutes()).padStart(2,"0");
-  const ampm = h>=12 ? "PM" : "AM";
-  h = h%12; if (h===0) h=12;
-  return `${h}:${m} ${ampm}`;
+const formatTime = (ts)=>{
+  if (!ts) return "";
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
 };
 
-/** ✅ Firestore structure:
- * users/{uid} => { username, passHash, online, lastSeen }
- * chats/{chatId} => { members:[uid1,uid2], memberUsernames:{uid:username}, lastMessage, lastAt, unread:{uid:number} }
- * chats/{chatId}/messages/{msgId} => { text, senderId, createdAt }
- */
-
+/** Firestore */
 const userDocByUsername = async (uname)=>{
   const qy = query(collection(db,"users"), where("username","==", uname), limit(1));
   const snap = await getDocs(qy);
@@ -115,10 +104,7 @@ const userDocByUsername = async (uname)=>{
   return { uid:d.id, ...d.data() };
 };
 
-const ensureChatId = (uid1, uid2)=>{
-  // stable order
-  return [uid1,uid2].sort().join("_");
-};
+const ensureChatId = (uid1, uid2)=> [uid1,uid2].sort().join("_");
 
 const ensureChat = async (otherUsername)=>{
   const other = await userDocByUsername(otherUsername);
@@ -137,23 +123,9 @@ const ensureChat = async (otherUsername)=>{
       },
       lastMessage:"",
       lastAt: serverTimestamp(),
-      unread:{
-        [me.uid]:0,
-        [other.uid]:0
-      }
+      unread:{ [me.uid]:0, [other.uid]:0 }
     });
-  } else {
-    // ensure usernames map exists
-    const data = chatSnap.data();
-    const map = data.memberUsernames || {};
-    if (!map[me.uid] || !map[other.uid]){
-      await updateDoc(chatRef,{
-        [`memberUsernames.${me.uid}`]: me.username,
-        [`memberUsernames.${other.uid}`]: other.username
-      });
-    }
   }
-
   return { chatId, otherUid: other.uid, otherUsername: other.username };
 };
 
@@ -162,12 +134,7 @@ const renderChatItem = (chatId, data)=>{
   const otherName = (data.memberUsernames && data.memberUsernames[otherUid]) || "user";
   const last = data.lastMessage || "";
   const unread = (data.unread && data.unread[me.uid]) || 0;
-  const time = data.lastAt?.toDate ? (()=> {
-    const d=data.lastAt.toDate();
-    let h=d.getHours(); const m=String(d.getMinutes()).padStart(2,"0");
-    const ampm=h>=12?"PM":"AM"; h=h%12; if(h===0)h=12;
-    return `${h}:${m} ${ampm}`;
-  })() : "";
+  const time = data.lastAt ? formatTime(data.lastAt) : "";
 
   const el = document.createElement("div");
   el.className = "chatItem";
@@ -195,6 +162,7 @@ const renderChatItem = (chatId, data)=>{
 
 const listenChats = ()=>{
   if (unsubChats) unsubChats();
+
   const qy = query(
     collection(db,"chats"),
     where("members","array-contains", me.uid),
@@ -215,12 +183,10 @@ const openChat = async (chatId, otherUid, otherUsername)=>{
 
   dmName.textContent = otherUsername;
   dmStatusText.textContent = "Online";
-  openDMUI(true); // ✅ DM open => hide top header
+  openDMUI(true);
 
   // reset unread for me
-  await updateDoc(doc(db,"chats",chatId), {
-    [`unread.${me.uid}`]: 0
-  });
+  await updateDoc(doc(db,"chats",chatId), { [`unread.${me.uid}`]: 0 });
 
   // messages listen
   if (unsubMessages) unsubMessages();
@@ -234,12 +200,7 @@ const openChat = async (chatId, otherUid, otherUsername)=>{
       const isMe = m.senderId === me.uid;
       const div = document.createElement("div");
       div.className = `bubble ${isMe ? "me" : ""}`;
-      const ts = m.createdAt?.toDate ? (()=> {
-        const dt=m.createdAt.toDate();
-        let h=dt.getHours(); const mm=String(dt.getMinutes()).padStart(2,"0");
-        const ampm=h>=12?"PM":"AM"; h=h%12; if(h===0)h=12;
-        return `${h}:${mm} ${ampm}`;
-      })() : nowTime();
+      const ts = m.createdAt ? formatTime(m.createdAt) : "";
 
       div.innerHTML = `<div class="t">${m.text || ""}</div><div class="ts">${ts}</div>`;
       messagesEl.appendChild(div);
@@ -250,21 +211,18 @@ const openChat = async (chatId, otherUid, otherUsername)=>{
 
 const sendMessage = async ()=>{
   if (!activeChat) return;
-
   const text = msgInput.value.trim();
   if (!text) return;
   msgInput.value = "";
 
   const { chatId, otherUid } = activeChat;
 
-  // add message
   await addDoc(collection(db,"chats",chatId,"messages"),{
     text,
     senderId: me.uid,
     createdAt: serverTimestamp()
   });
 
-  // update chat meta + unread for other
   const chatRef = doc(db,"chats",chatId);
   const chatSnap = await getDoc(chatRef);
   const data = chatSnap.data();
@@ -277,7 +235,7 @@ const sendMessage = async ()=>{
   });
 };
 
-/** ✅ LOGIN/CREATE */
+/** auth (simple username+password via users collection) */
 const doCreate = async ()=>{
   const uname = usernameInput.value.trim();
   const pass = passwordInput.value.trim();
@@ -352,7 +310,7 @@ const doLogout = async ()=>{
   setAuthUI(false);
 };
 
-/** ✅ Add user -> create/open chat (but chat open ONLY after clicking chat item like WhatsApp) */
+/** ✅ Add user (+) -> chat create + OPEN DM immediately */
 const addUser = async ()=>{
   const uname = addUserInput.value.trim();
   if (!uname) return;
@@ -361,49 +319,47 @@ const addUser = async ()=>{
   if (uname === me.username) return alert("Apna khud ka username nahi");
 
   try{
-    await ensureChat(uname); // creates chat and it will appear in list
+    const c = await ensureChat(uname);
     addUserInput.value = "";
+
+    // ✅ open DM immediately
+    await openChat(c.chatId, c.otherUid, c.otherUsername);
+
   }catch(e){
     alert(e.message || "Failed");
   }
 };
 
-/** ✅ BACK */
-backBtn.addEventListener("click", ()=>{
-  // stop messages listener
-  if (unsubMessages) unsubMessages();
-  unsubMessages = null;
-  activeChat = null;
-  openDMUI(false); // ✅ back => show list + show topbar
-});
-
-/** ✅ Buttons */
+/** events */
 loginBtn.addEventListener("click", doLogin);
 createBtn.addEventListener("click", doCreate);
 logoutBtn.addEventListener("click", doLogout);
 
 addUserBtn.addEventListener("click", addUser);
-addUserInput.addEventListener("keydown",(e)=>{
-  if (e.key==="Enter") addUser();
-});
+addUserInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") addUser(); });
 
 sendBtn.addEventListener("click", sendMessage);
-msgInput.addEventListener("keydown",(e)=>{
-  if (e.key==="Enter") sendMessage();
+msgInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") sendMessage(); });
+
+backBtn.addEventListener("click", ()=>{
+  if (unsubMessages) unsubMessages();
+  unsubMessages = null;
+  activeChat = null;
+  openDMUI(false);
 });
 
-/** Coming soon tabs */
-tabUpdates.addEventListener("click", ()=>toastShow("Coming soon"));
-tabCommunities.addEventListener("click", ()=>toastShow("Coming soon"));
-tabCalls.addEventListener("click", ()=>toastShow("Coming soon"));
+/** coming soon tabs */
+document.getElementById("tabUpdates").addEventListener("click", ()=>toastShow("Coming soon"));
+document.getElementById("tabCommunities").addEventListener("click", ()=>toastShow("Coming soon"));
+document.getElementById("tabCalls").addEventListener("click", ()=>toastShow("Coming soon"));
 
-/** ✅ Auto session restore */
+/** restore session */
 (async ()=>{
+  setAuthUI(false);
+  logoutBtn.style.display = "none";
+
   const uid = localStorage.getItem("me_uid");
   const uname = localStorage.getItem("me_username");
-
-  setAuthUI(false);
-
   if (uid && uname){
     me = { uid, username: uname };
     meName.textContent = uname;
