@@ -2,44 +2,63 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Shivanshcodex Chat</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <title>Shivanshcodex</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
 <div id="app">
-  <header>
-    <h1>Shivanshcodex</h1>
-    <span>WhatsApp-like chat</span>
+
+  <!-- HEADER -->
+  <header class="topbar">
+    <div>
+      <h1>Shivanshcodex</h1>
+      <p>WhatsApp-like chat</p>
+    </div>
     <button id="logoutBtn">Logout</button>
   </header>
 
-  <section id="auth">
-    <input id="email" placeholder="email" />
+  <!-- LOGIN -->
+  <section id="loginBox" class="card">
+    <h2>Login</h2>
+    <input id="email" placeholder="email@example.com" />
     <input id="password" type="password" placeholder="password" />
     <input id="username" placeholder="username" />
-    <button id="loginBtn">Login</button>
-    <button id="registerBtn">Create account</button>
+    <div class="row">
+      <button onclick="login()">Login</button>
+      <button onclick="register()">Create account</button>
+    </div>
+    <small>Tip: 2 browsers/incognito me 2 users bana ke test karo.</small>
   </section>
 
-  <section id="chatApp" class="hidden">
-    <div class="sidebar">
-      <input id="searchUser" placeholder="Add user by username" />
-      <button id="addUserBtn">+</button>
-      <ul id="chatList"></ul>
-    </div>
+  <!-- CHAT APP -->
+  <section id="chatApp" class="chat-container hidden">
 
-    <div class="chat">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="add-user">
+        <input id="searchUser" placeholder="Add user by username" />
+        <button onclick="startChat()">+</button>
+      </div>
+      <ul id="chatList"></ul>
+    </aside>
+
+    <!-- CHAT AREA -->
+    <main class="chat-area">
       <div id="chatHeader">Select a chat</div>
       <div id="messages"></div>
-      <div class="inputBar">
-        <input id="messageInput" placeholder="Type a message" />
-        <button id="sendBtn">▶</button>
+
+      <div class="send-box">
+        <input id="msgInput" placeholder="Type a message" />
+        <button onclick="sendMessage()">➤</button>
       </div>
-    </div>
+    </main>
+
   </section>
+
 </div>
 
-<script type="module" src="./app.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
