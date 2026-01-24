@@ -1,85 +1,57 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Shivanshcodex</title>
-  <link rel="stylesheet" href="./styles.css"/>
+  <title>Shivanshcodex – WhatsApp-like chat</title>
+
+  <!-- CSS MUST LOAD FROM ROOT -->
+  <link rel="stylesheet" href="/styles.css" />
 </head>
+
 <body>
-  <div class="bg-live"></div>
+  <div id="app">
+    <h1>Shivanshcodex</h1>
+    <p class="subtitle">WhatsApp-like chat</p>
 
-  <div class="wrap">
-    <header class="topbar">
-      <div class="brand">
-        <div class="title">Shivanshcodex</div>
-        <div class="sub">WhatsApp-like chat</div>
-      </div>
-      <button id="logoutBtn" class="btn ghost hidden">Logout</button>
-    </header>
+    <button id="logoutBtn">Logout</button>
 
-    <!-- AUTH -->
-    <section id="authView" class="card">
-      <h2 id="authTitle">Login</h2>
+    <h2>Login</h2>
 
-      <div class="grid">
-        <label class="lbl">Email</label>
-        <input id="email" class="input" placeholder="email@example.com" autocomplete="email"/>
+    <label>Email</label>
+    <input id="email" type="email" placeholder="email@example.com"/>
 
-        <label class="lbl">Password</label>
-        <input id="password" class="input" type="password" placeholder="••••••••" autocomplete="current-password"/>
+    <label>Password</label>
+    <input id="password" type="password"/>
 
-        <div id="usernameRow" class="hidden">
-          <label class="lbl">Username</label>
-          <input id="username" class="input" placeholder="shivansh3838" autocomplete="username"/>
-        </div>
-      </div>
+    <label>Username</label>
+    <input id="username" placeholder="shivansh3838"/>
 
-      <div class="row">
-        <button id="primaryBtn" class="btn">Login</button>
-        <button id="toggleBtn" class="btn ghost">Create account</button>
-      </div>
+    <div class="btn-row">
+      <button id="loginBtn">Login</button>
+      <button id="registerBtn">Create account</button>
+    </div>
 
-      <div id="authMsg" class="msg"></div>
-      <div class="hint">Tip: 2 browsers/incognito me 2 users bana ke test karo.</div>
-    </section>
+    <p class="tip">
+      Tip: 2 browsers/incognito me 2 users bana ke test karo.
+    </p>
 
-    <!-- APP -->
-    <section id="appView" class="app hidden">
-      <aside class="sidebar card">
-        <div class="mebox">
-          <div class="meuser" id="meUser">—</div>
-          <div class="meemail" id="meEmail">—</div>
-        </div>
+    <hr />
 
-        <div class="addbox">
-          <input id="searchUser" class="input" placeholder="Add user by username"/>
-          <button id="addUserBtn" class="btn">+</button>
-        </div>
-        <div id="statusMsg" class="msg"></div>
+    <div class="chat-box">
+      <input id="searchUser" placeholder="Add user by username"/>
+      <button id="addUserBtn">+</button>
+    </div>
 
-        <div class="list" id="chatList"></div>
-      </aside>
+    <p>Select a chat</p>
 
-      <main class="chat card">
-        <div class="chatHeader">
-          <div class="dp" title="DP"></div>
-          <div>
-            <div class="chatTitle" id="chatTitle">Select a chat</div>
-            <div class="chatSub" id="chatSub">—</div>
-          </div>
-        </div>
-
-        <div class="messages" id="messages"></div>
-
-        <div class="composer">
-          <input id="msgInput" class="input" placeholder="Type a message" disabled />
-          <button id="sendBtn" class="btn" disabled title="Send">➤</button>
-        </div>
-      </main>
-    </section>
+    <div class="message-box">
+      <input id="messageInput" placeholder="Type a message"/>
+      <button id="sendBtn">▶</button>
+    </div>
   </div>
 
-  <script type="module" src="./app.js"></script>
+  <!-- JS -->
+  <script type="module" src="/app.js"></script>
 </body>
 </html>
