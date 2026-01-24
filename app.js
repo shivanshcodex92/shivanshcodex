@@ -379,7 +379,6 @@ function subscribeMessages(chatId){
     });
 
     // auto scroll bottom
-    requestAnimationFrame(() => {
     messagesEl.scrollTop = messagesEl.scrollHeight;
   });
 }
