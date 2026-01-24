@@ -8,13 +8,8 @@
 <style>
 *{box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;}
 html,body{height:100%;margin:0;}
+body.locked{overflow:hidden;}
 
-/* ✅ LOGIN PAGE SCROLL OFF */
-body.locked{
-overflow:hidden;
-}
-
-/* ✅ LIVE COLORFUL BACKGROUND (3 colors aesthetic) */
 body{
 color:#fff;
 background:
@@ -27,7 +22,6 @@ animation:bgPulse 10s ease-in-out infinite;
 display:flex;
 flex-direction:column;
 }
-
 @keyframes bgPulse{
 0%{background-position:0% 50%}
 50%{background-position:100% 50%}
@@ -36,37 +30,34 @@ flex-direction:column;
 
 /* HEADER */
 header{
-padding:16px 16px 10px;
+padding:14px 14px 10px;
 background:rgba(0,0,0,.22);
 backdrop-filter:blur(12px);
 display:flex;
 justify-content:space-between;
 align-items:center;
+gap:12px;
 }
-header h1{margin:0;font-size:24px}
-header span{font-size:13px;color:#bde5dc}
+header h1{margin:0;font-size:22px}
+header span{font-size:12px;color:#bde5dc}
+header .left{display:flex;flex-direction:column;line-height:1.05}
+header .right{display:flex;gap:10px;align-items:center}
 header button{
-background:#25d366;border:none;padding:10px 18px;border-radius:20px;
-font-weight:700;cursor:pointer;
+background:#25d366;border:none;padding:10px 16px;border-radius:18px;
+font-weight:800;cursor:pointer;
 box-shadow:0 8px 20px rgba(37,211,102,.35);
 transition:.18s;
 }
 header button:active{transform:scale(.95)}
 
-/* ✅ LOGIN WRAPPER FIXED CENTER */
+/* LOGIN */
 #loginBox{
-position:fixed;
-inset:0;
-display:flex;
-align-items:center;
-justify-content:center;
+position:fixed; inset:0;
+display:flex; align-items:center; justify-content:center;
 padding:18px;
 }
-
-/* FLOATING GLASS CARD */
 .login-card{
-width:100%;
-max-width:380px;
+width:100%;max-width:380px;
 background:rgba(255,255,255,.08);
 backdrop-filter:blur(18px);
 border:1px solid rgba(255,255,255,.10);
@@ -75,134 +66,272 @@ padding:26px 22px;
 box-shadow:0 30px 70px rgba(0,0,0,.45);
 animation:float 4s ease-in-out infinite;
 }
-
-@keyframes float{
-0%,100%{transform:translateY(0)}
-50%{transform:translateY(-8px)}
-}
-
-.login-card h2{
-margin:0 0 18px;
-font-size:28px;
-text-align:center;
-letter-spacing:.3px;
-}
-
-/* INPUTS */
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.login-card h2{margin:0 0 18px;font-size:28px;text-align:center;}
 input{
-width:100%;
-padding:16px;
-border-radius:16px;
-border:none;
-margin-bottom:14px;
-font-size:15px;
-background:rgba(255,255,255,.92);
-outline:none;
+width:100%;padding:16px;border-radius:16px;border:none;margin-bottom:14px;
+font-size:15px;background:rgba(255,255,255,.92);outline:none;
 }
-
-/* BUTTONS */
 .btn-row{display:flex;gap:12px;margin-top:6px;}
 .btn{
-flex:1;
-padding:14px;
-border:none;
-border-radius:22px;
-background:#25d366;
-color:#031b10;
-font-weight:800;
-cursor:pointer;
+flex:1;padding:14px;border:none;border-radius:22px;
+background:#25d366;color:#031b10;font-weight:900;cursor:pointer;
 box-shadow:0 10px 25px rgba(37,211,102,.40);
 transition:.18s;
 }
 .btn:active{transform:scale(.96);}
+.tip{margin-top:14px;text-align:center;font-size:13px;color:#d0f1ea;opacity:.9;}
 
-.tip{
-margin-top:14px;
-text-align:center;
-font-size:13px;
-color:#d0f1ea;
-opacity:.9;
+/* APP SHELL */
+#appShell{display:none;flex:1;min-height:0;}
+.shell{
+flex:1; min-height:0;
+display:flex;
+gap:12px;
+padding:12px;
 }
+.panel{
+background:rgba(0,0,0,.20);
+backdrop-filter:blur(14px);
+border:1px solid rgba(255,255,255,.08);
+border-radius:20px;
+box-shadow:0 20px 60px rgba(0,0,0,.35);
+overflow:hidden;
+min-height:0;
+}
+.listPanel{width:360px;max-width:44vw;display:flex;flex-direction:column;}
+.chatPanel{flex:1;display:flex;flex-direction:column;min-width:0;}
 
-/* CHAT UI */
-#chatUI{
-display:none;
+/* TOP BAR (inside panels) */
+.panelTop{
+padding:12px;
+display:flex;
+align-items:center;
+gap:10px;
+border-bottom:1px solid rgba(255,255,255,.08);
+background:rgba(0,0,0,.12);
+}
+.panelTop h3{margin:0;font-size:14px;color:#d8fff3;font-weight:800;letter-spacing:.2px;}
+.spacer{flex:1}
+.smallBtn{
+width:44px;height:44px;border-radius:16px;border:none;
+background:#25d366;color:#022b18;font-weight:900;
+cursor:pointer;box-shadow:0 8px 18px rgba(37,211,102,.35);
+transition:.18s;
+}
+.smallBtn:active{transform:scale(.95);}
+.pillInput{
 flex:1;
-flex-direction:column;
+padding:12px 14px;border-radius:18px;border:none;outline:none;
+background:rgba(255,255,255,.92);
 }
-.chat-area{flex:1;padding:16px;overflow-y:auto;}
+
+/* CHAT LIST */
+#chatList{flex:1;overflow:auto;padding:6px;}
+.chatRow{
+display:flex;gap:12px;
+padding:12px 12px;
+border-radius:16px;
+cursor:pointer;
+transition:.12s;
+align-items:center;
+}
+.chatRow:hover{background:rgba(255,255,255,.06);}
+.chatRow.active{background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.18);}
+.avatar{
+width:44px;height:44px;border-radius:50%;
+background:rgba(255,255,255,.16);
+display:flex;align-items:center;justify-content:center;
+font-weight:900;color:#eafff7;
+position:relative;
+flex:0 0 auto;
+}
+.dot{
+position:absolute;right:2px;bottom:2px;
+width:12px;height:12px;border-radius:50%;
+background:rgba(255,255,255,.25);
+border:2px solid rgba(0,0,0,.25);
+}
+.dot.on{background:#25d366;}
+.rowMid{flex:1;min-width:0;}
+.rowTop{display:flex;align-items:center;gap:10px;}
+.name{
+font-weight:900;
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.time{
+margin-left:auto;
+font-size:12px;color:rgba(255,255,255,.65);
+flex:0 0 auto;
+}
+.lastMsg{
+font-size:13px;color:rgba(255,255,255,.70);
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+margin-top:3px;
+}
+.badges{
+display:flex;flex-direction:column;align-items:flex-end;gap:6px;
+}
+.unread{
+min-width:22px;height:22px;padding:0 7px;border-radius:999px;
+background:#25d366;color:#012a17;
+display:inline-flex;align-items:center;justify-content:center;
+font-weight:900;font-size:12px;
+box-shadow:0 8px 18px rgba(37,211,102,.25);
+}
+
+/* CHAT HEADER */
+.chatHead{
+display:flex;align-items:center;gap:12px;
+padding:12px;
+border-bottom:1px solid rgba(255,255,255,.08);
+background:rgba(0,0,0,.12);
+}
+.backBtn{
+display:none;
+width:44px;height:44px;border-radius:16px;border:none;
+background:rgba(255,255,255,.10);color:#fff;font-weight:900;
+cursor:pointer;transition:.18s;
+}
+.backBtn:active{transform:scale(.95)}
+.chatTitleWrap{display:flex;flex-direction:column;line-height:1.1;min-width:0}
+.chatTitle{
+font-weight:900;
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.chatSub{font-size:12px;color:rgba(255,255,255,.7);}
+.chatHead .avatar{width:42px;height:42px}
+
+/* MESSAGES */
+#messages{
+flex:1;overflow:auto;padding:14px;min-height:0;
+}
 .msg{
-max-width:72%;
-padding:12px 16px;
+max-width:78%;
+padding:11px 14px;
 margin-bottom:10px;
 border-radius:18px;
-font-size:14px;line-height:1.4;
+font-size:14px;line-height:1.35;
+word-wrap:break-word;
 }
-.me{background:#25d366;color:#000;margin-left:auto;}
-.other{background:rgba(255,255,255,.15);}
+.me{background:#25d366;color:#001b10;margin-left:auto;border-bottom-right-radius:8px;}
+.other{background:rgba(255,255,255,.14);border-bottom-left-radius:8px;}
+.msgTime{display:block;font-size:11px;opacity:.65;margin-top:6px;text-align:right;}
 
-.input-bar{
-display:flex;
+/* INPUT BAR */
+.inputBar{
+display:flex;gap:10px;
 padding:12px;
-background:rgba(0,0,0,.30);
+border-top:1px solid rgba(255,255,255,.08);
+background:rgba(0,0,0,.16);
 backdrop-filter:blur(10px);
 }
-.input-bar input{flex:1;border-radius:22px;padding:14px;border:none;}
+.inputBar input{
+flex:1;border-radius:22px;padding:14px;border:none;margin:0;
+background:rgba(255,255,255,.92);
+}
 .send{
-margin-left:8px;
-width:50px;height:50px;
-border-radius:50%;
-border:none;
-background:#25d366;
-font-size:18px;
-cursor:pointer;
-box-shadow:0 8px 20px rgba(37,211,102,.45);
+width:50px;height:50px;border-radius:50%;
+border:none;background:#25d366;color:#022b18;font-size:18px;
+cursor:pointer;box-shadow:0 8px 20px rgba(37,211,102,.45);
 transition:.18s;
 }
 .send:active{transform:scale(.95);}
+
+/* EMPTY STATE */
+.empty{
+flex:1;display:flex;align-items:center;justify-content:center;
+color:rgba(255,255,255,.65);
+font-weight:800;
+padding:18px;
+text-align:center;
+}
+
+/* MOBILE: list <-> chat screens */
+@media (max-width: 860px){
+  .shell{padding:10px}
+  .listPanel{width:100%;max-width:none}
+  .chatPanel{display:none}
+  .chatPanel.show{display:flex}
+  .listPanel.hide{display:none}
+  .backBtn{display:inline-flex;align-items:center;justify-content:center}
+}
 </style>
 </head>
 
 <body class="locked">
 
 <header>
-<div>
-<h1>Shivanshcodex</h1>
-<span>WhatsApp-like chat</span>
-</div>
-<button id="logoutBtn" style="display:none">Logout</button>
+  <div class="left">
+    <h1>Shivanshcodex</h1>
+    <span>WhatsApp-like chat</span>
+  </div>
+  <div class="right">
+    <button id="logoutBtn" style="display:none">Logout</button>
+  </div>
 </header>
 
 <!-- LOGIN -->
 <div id="loginBox">
   <div class="login-card">
     <h2>Login</h2>
-    <input id="username" placeholder="username">
-    <input id="password" type="password" placeholder="password">
-
+    <input id="username" placeholder="username" autocomplete="username">
+    <input id="password" type="password" placeholder="password" autocomplete="current-password">
     <div class="btn-row">
       <button class="btn" id="loginBtn">Login</button>
       <button class="btn" id="signupBtn">Create</button>
     </div>
-
     <div class="tip">2 browsers / incognito me test karo</div>
   </div>
 </div>
 
-<!-- CHAT -->
-<div id="chatUI">
-  <div class="chat-area" id="messages"></div>
-  <div class="input-bar">
-    <input id="msgInput" placeholder="Message">
-    <button class="send" id="sendBtn">➤</button>
+<!-- APP -->
+<div id="appShell">
+  <div class="shell">
+
+    <!-- LEFT: Chat List -->
+    <div class="panel listPanel" id="listPanel">
+      <div class="panelTop">
+        <input class="pillInput" id="addUserInput" placeholder="Add user by username">
+        <button class="smallBtn" id="addUserBtn">+</button>
+      </div>
+      <div id="chatList"></div>
+    </div>
+
+    <!-- RIGHT: Chat -->
+    <div class="panel chatPanel" id="chatPanel">
+      <div class="chatHead">
+        <button class="backBtn" id="backBtn">←</button>
+        <div class="avatar" id="chatAvatar">?</div>
+        <div class="chatTitleWrap">
+          <div class="chatTitle" id="chatTitle">Select a chat</div>
+          <div class="chatSub" id="chatSub"> </div>
+        </div>
+        <div class="spacer"></div>
+      </div>
+
+      <div id="messages" class="empty">Select a chat to start messaging</div>
+
+      <div class="inputBar" id="inputBar" style="display:none">
+        <input id="msgInput" placeholder="Message">
+        <button class="send" id="sendBtn">➤</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+import {
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  onAuthStateChanged, signOut, updateProfile
+} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import {
+  getFirestore, doc, setDoc, getDoc, updateDoc,
+  collection, query, where, onSnapshot, orderBy, limit,
+  addDoc, serverTimestamp, increment, writeBatch
+} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDS6wdYNG2Q7ZUNPjUXdOn-Sqb3cLC4NgQ",
@@ -217,50 +346,329 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const loginBox=document.getElementById("loginBox");
-const chatUI=document.getElementById("chatUI");
-const logoutBtn=document.getElementById("logoutBtn");
+/* UI */
+const loginBox = document.getElementById("loginBox");
+const appShell = document.getElementById("appShell");
+const logoutBtn = document.getElementById("logoutBtn");
 
-const fakeEmail=u=>u+"@shivansh.chat";
+const usernameEl = document.getElementById("username");
+const passwordEl = document.getElementById("password");
+const signupBtn = document.getElementById("signupBtn");
+const loginBtn = document.getElementById("loginBtn");
 
-signupBtn.onclick=()=>createUserWithEmailAndPassword(auth,fakeEmail(username.value),password.value);
-loginBtn.onclick=()=>signInWithEmailAndPassword(auth,fakeEmail(username.value),password.value);
-logoutBtn.onclick=()=>signOut(auth);
+const addUserInput = document.getElementById("addUserInput");
+const addUserBtn = document.getElementById("addUserBtn");
+const chatListEl = document.getElementById("chatList");
 
-onAuthStateChanged(auth,user=>{
-  loginBox.style.display=user?"none":"flex";
-  chatUI.style.display=user?"flex":"none";
-  logoutBtn.style.display=user?"block":"none";
-  document.body.classList.toggle("locked", !user); // ✅ login pe scroll off
+const listPanel = document.getElementById("listPanel");
+const chatPanel = document.getElementById("chatPanel");
+const backBtn = document.getElementById("backBtn");
 
-  if(user) loadMessages();
+const chatTitle = document.getElementById("chatTitle");
+const chatSub = document.getElementById("chatSub");
+const chatAvatar = document.getElementById("chatAvatar");
+
+const messagesEl = document.getElementById("messages");
+const inputBar = document.getElementById("inputBar");
+const msgInput = document.getElementById("msgInput");
+const sendBtn = document.getElementById("sendBtn");
+
+/* State */
+let myUid = null;
+let myUsername = null;
+let activeChatId = null;
+let activeOtherUid = null;
+let unsubChatList = null;
+let unsubMessages = null;
+let unsubOtherPresence = null;
+const presenceCache = new Map();
+
+/* Helpers */
+const fakeEmail = (u) => `${u.toLowerCase()}@shivanshcodex.chat`;
+const safe = (s) => (s || "").trim();
+const lower = (s) => safe(s).toLowerCase();
+const initials = (name) => {
+  const n = safe(name);
+  if(!n) return "?";
+  const parts = n.split(/\s+/).filter(Boolean);
+  const a = parts[0]?.[0] || "?";
+  const b = parts.length>1 ? parts[parts.length-1][0] : (parts[0]?.[1] || "");
+  return (a + b).toUpperCase();
+};
+const fmtTime = (ts) => {
+  if(!ts?.toDate) return "";
+  const d = ts.toDate();
+  const hh = d.getHours();
+  const mm = String(d.getMinutes()).padStart(2,"0");
+  const ap = hh>=12 ? "PM" : "AM";
+  const h12 = ((hh+11)%12)+1;
+  return `${h12}:${mm} ${ap}`;
+};
+const fmtLastSeen = (ts) => {
+  if(!ts?.toDate) return "";
+  const d = ts.toDate();
+  const now = new Date();
+  const diff = now - d;
+  const mins = Math.floor(diff/60000);
+  if(mins < 1) return "just now";
+  if(mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins/60);
+  if(hrs < 24) return `${hrs} hr ago`;
+  return d.toLocaleDateString();
+};
+const makeChatId = (a,b) => [a,b].sort().join("_");
+
+/* AUTH */
+signupBtn.onclick = async () => {
+  const u = lower(usernameEl.value);
+  const p = passwordEl.value;
+  if(!u || !p){ alert("username + password required"); return; }
+
+  // username unique check
+  const unameRef = doc(db, "usernames", u);
+  const unameSnap = await getDoc(unameRef);
+  if(unameSnap.exists()){ alert("Username already taken"); return; }
+
+  const cred = await createUserWithEmailAndPassword(auth, fakeEmail(u), p);
+  await updateProfile(cred.user, { displayName: u });
+
+  // create user docs + username mapping
+  const batch = writeBatch(db);
+  batch.set(doc(db,"users",cred.user.uid), {
+    username: u,
+    online: true,
+    lastSeen: serverTimestamp(),
+    createdAt: serverTimestamp()
+  }, { merge:true });
+  batch.set(unameRef, { uid: cred.user.uid }, { merge:true });
+  await batch.commit();
+};
+
+loginBtn.onclick = async () => {
+  const u = lower(usernameEl.value);
+  const p = passwordEl.value;
+  if(!u || !p){ alert("username + password required"); return; }
+  await signInWithEmailAndPassword(auth, fakeEmail(u), p);
+};
+
+logoutBtn.onclick = async () => {
+  await setOnline(false);
+  await signOut(auth);
+};
+
+onAuthStateChanged(auth, async (user) => {
+  if(!user){
+    myUid = null; myUsername = null;
+    activeChatId = null; activeOtherUid = null;
+    cleanupListeners();
+
+    loginBox.style.display = "flex";
+    appShell.style.display = "none";
+    logoutBtn.style.display = "none";
+    document.body.classList.add("locked");
+    return;
+  }
+
+  myUid = user.uid;
+  myUsername = (user.displayName || "").toLowerCase();
+
+  loginBox.style.display = "none";
+  appShell.style.display = "block";
+  logoutBtn.style.display = "block";
+  document.body.classList.remove("locked");
+
+  // ensure user doc exists + online true
+  await setDoc(doc(db,"users",myUid), {
+    username: myUsername || "user",
+    online: true,
+    lastSeen: serverTimestamp()
+  }, { merge:true });
+
+  await setOnline(true);
+  attachPresenceAutoUpdates();
+
+  listenChatList();
 });
 
-function loadMessages(){
-  const q=query(collection(db,"messages"),orderBy("time"));
-  onSnapshot(q,s=>{
-    messages.innerHTML="";
-    s.forEach(d=>{
-      const m=d.data();
-      const div=document.createElement("div");
-      div.className="msg "+(m.uid===auth.currentUser.uid?"me":"other");
-      div.textContent=m.text;
-      messages.appendChild(div);
-      messages.scrollTop=messages.scrollHeight;
+/* Presence */
+async function setOnline(isOnline){
+  if(!myUid) return;
+  try{
+    await updateDoc(doc(db,"users",myUid), {
+      online: isOnline,
+      lastSeen: serverTimestamp()
     });
+  }catch(e){
+    // ignore if doc not ready
+  }
+}
+function attachPresenceAutoUpdates(){
+  const markAway = () => setOnline(false);
+  const markBack = () => setOnline(true);
+
+  window.addEventListener("beforeunload", markAway);
+  document.addEventListener("visibilitychange", () => {
+    if(document.hidden) markAway();
+    else markBack();
   });
 }
 
-sendBtn.onclick=async()=>{
-  if(!msgInput.value)return;
-  await addDoc(collection(db,"messages"),{
-    text:msgInput.value,
-    uid:auth.currentUser.uid,
-    time:serverTimestamp()
-  });
-  msgInput.value="";
-};
-</script>
+/* Chat list */
+function cleanupListeners(){
+  if(unsubChatList){ unsubChatList(); unsubChatList=null; }
+  if(unsubMessages){ unsubMessages(); unsubMessages=null; }
+  if(unsubOtherPresence){ unsubOtherPresence(); unsubOtherPresence=null; }
+}
+function listenChatList(){
+  if(unsubChatList) unsubChatList();
 
-</body>
-</html>
+  // NOTE: array-contains + orderBy may ask for index. If it does, open console link and create index.
+  const q = query(
+    collection(db,"chats"),
+    where("participants","array-contains", myUid),
+    orderBy("lastMessageAt","desc"),
+    limit(50)
+  );
+
+  unsubChatList = onSnapshot(q, async (snap) => {
+    const chats = [];
+    snap.forEach(docu => chats.push({ id: docu.id, ...docu.data() }));
+
+    // render
+    chatListEl.innerHTML = "";
+    if(chats.length===0){
+      chatListEl.innerHTML = `<div class="empty" style="padding:18px;">No chats yet. Add a user by username.</div>`;
+      return;
+    }
+
+    for(const c of chats){
+      const otherUid = c.participants.find(x => x !== myUid);
+      const otherName = c.participantUsernames?.[otherUid] || "user";
+      const unread = c.unread?.[myUid] || 0;
+      const lastMsg = c.lastMessage || "";
+      const t = fmtTime(c.lastMessageAt);
+
+      // presence cache (avoid too many listeners). We'll lazy-load once and cache.
+      let presence = presenceCache.get(otherUid);
+      if(!presence){
+        // one live listener per UID max:
+        onSnapshot(doc(db,"users",otherUid), (uSnap) => {
+          if(!uSnap.exists()) return;
+          presenceCache.set(otherUid, uSnap.data());
+          // re-render fast (simple approach)
+          listenChatList(); // refresh UI
+        });
+        presence = { online:false };
+        presenceCache.set(otherUid, presence);
+      }
+
+      const row = document.createElement("div");
+      row.className = "chatRow" + (c.id===activeChatId ? " active":"");
+      row.onclick = () => openChat(c.id, otherUid, otherName);
+
+      row.innerHTML = `
+        <div class="avatar">
+          ${initials(otherName)}
+          <span class="dot ${presence?.online ? "on":""}"></span>
+        </div>
+        <div class="rowMid">
+          <div class="rowTop">
+            <div class="name">${escapeHtml(otherName)}</div>
+            <div class="time">${t}</div>
+          </div>
+          <div class="lastMsg">${escapeHtml(lastMsg || " ")}</div>
+        </div>
+        <div class="badges">
+          ${unread>0 ? `<div class="unread">${unread}</div>` : `<div style="height:22px"></div>`}
+        </div>
+      `;
+      chatListEl.appendChild(row);
+    }
+  }, (err) => {
+    console.error(err);
+    chatListEl.innerHTML = `<div class="empty" style="padding:18px;">Index required. Console me link open karke "Create index" kar do.</div>`;
+  });
+}
+
+/* Add user -> start chat */
+addUserBtn.onclick = () => startChatByUsername(addUserInput.value);
+addUserInput.addEventListener("keydown", (e)=>{ if(e.key==="Enter") startChatByUsername(addUserInput.value); });
+
+async function startChatByUsername(target){
+  const t = lower(target);
+  if(!t){ alert("Username likho"); return; }
+  if(t === myUsername){ alert("Apne aap se chat? 😄"); return; }
+
+  const unameRef = doc(db,"usernames", t);
+  const unameSnap = await getDoc(unameRef);
+  if(!unameSnap.exists()){ alert("User not found"); return; }
+
+  const otherUid = unameSnap.data().uid;
+  const chatId = makeChatId(myUid, otherUid);
+
+  const chatRef = doc(db,"chats", chatId);
+  const chatSnap = await getDoc(chatRef);
+
+  if(!chatSnap.exists()){
+    // create chat doc
+    const participantUsernames = {
+      [myUid]: myUsername,
+      [otherUid]: t
+    };
+    await setDoc(chatRef, {
+      participants: [myUid, otherUid],
+      participantUsernames,
+      lastMessage: "",
+      lastMessageAt: serverTimestamp(),
+      lastSender: "",
+      unread: { [myUid]: 0, [otherUid]: 0 },
+      createdAt: serverTimestamp()
+    }, { merge:true });
+  }
+
+  addUserInput.value = "";
+  openChat(chatId, otherUid, t);
+}
+
+/* Open chat */
+backBtn.onclick = () => {
+  // mobile: go back to list
+  chatPanel.classList.remove("show");
+  listPanel.classList.remove("hide");
+};
+
+async function openChat(chatId, otherUid, otherName){
+  activeChatId = chatId;
+  activeOtherUid = otherUid;
+
+  // mobile: switch screens
+  chatPanel.classList.add("show");
+  listPanel.classList.add("hide");
+
+  // header
+  chatTitle.textContent = otherName;
+  chatAvatar.textContent = initials(otherName);
+  chatSub.textContent = "loading…";
+
+  // clear unread
+  try{
+    await updateDoc(doc(db,"chats",chatId), { [`unread.${myUid}`]: 0 });
+  }catch(e){}
+
+  // other presence (header)
+  if(unsubOtherPresence) unsubOtherPresence();
+  unsubOtherPresence = onSnapshot(doc(db,"users",otherUid), (s) => {
+    if(!s.exists()){ chatSub.textContent = ""; return; }
+    const d = s.data();
+    if(d.online) chatSub.textContent = "online";
+    else chatSub.textContent = d.lastSeen ? `last seen ${fmtLastSeen(d.lastSeen)}` : "offline";
+  });
+
+  // messages listener
+  if(unsubMessages) unsubMessages();
+
+  messagesEl.classList.remove("empty");
+  messagesEl.innerHTML = "";
+  const mq = query(
+    collection(db, "chats", chatId, "messages"),
+    orderBy("time","a
