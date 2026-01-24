@@ -1,44 +1,44 @@
 "use client";
 
 import { useState } from "react";
-import { login } from "@/lib/auth";
-import { useRouter } from "next/navigation";
+import { loginUser } from "@/lib/auth";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
-  const [msg, setMsg] = useState<string | null>(null);
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setMsg(null);
-    try {
-      await login(email, pass);
-      router.replace("/app");
-    } catch (err: any) {
-      setMsg(err?.message || "Login failed");
-    }
-  }
+  const [msg, setMsg] = useState("");
 
   return (
-    <div className="pageCenter">
-      <div className="card">
-        <div style={{ fontSize: 22, fontWeight: 900 }}>Login</div>
-        <div className="sub">WhatsApp-like chat</div>
+    <div style={{ maxWidth: 420, margin: "70px auto" }} className="card">
+      <h2 style={{ marginTop: 0 }}>Login</h2>
 
-        <form onSubmit={onSubmit} style={{ marginTop: 14, display: "grid", gap: 10 }}>
-          <input className="input" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <input className="input" placeholder="Password" type="password" value={pass} onChange={(e) => setPass(e.target.value)} />
-          <button className="btn btnPrimary" type="submit">Login</button>
-        </form>
+      <input className="input" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <div style={{ height: 10 }} />
+      <input className="input" placeholder="Password" type="password" value={pass} onChange={(e) => setPass(e.target.value)} />
 
-        {msg && <div style={{ marginTop: 12, color: "#ffb4b4" }}>{msg}</div>}
+      <div style={{ height: 12 }} />
+      <button
+        className="btn"
+        style={{ width: "100%" }}
+        onClick={async () => {
+          setMsg("");
+          try {
+            await loginUser(email, pass);
+            window.location.href = "/app";
+          } catch (e: any) {
+            setMsg(e?.message || "Login failed");
+          }
+        }}
+      >
+        Login
+      </button>
 
-        <div style={{ marginTop: 14, color: "#8696a0", fontSize: 13 }}>
-          New user? <a href="/register" style={{ color: "#00a884", fontWeight: 800 }}>Register</a>
-        </div>
-      </div>
+      <div style={{ height: 10 }} />
+      <button className="btn" style={{ width: "100%" }} onClick={() => (window.location.href = "/register")}>
+        Create new account
+      </button>
+
+      {msg ? <p style={{ color: "#ff8080" }}>{msg}</p> : null}
     </div>
   );
 }
