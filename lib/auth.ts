@@ -1,77 +1,55 @@
-"use client";
-
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged,
-  User,
 } from "firebase/auth";
 import {
-  doc,
-  setDoc,
-  getDoc,
-  query,
   collection,
-  where,
+  doc,
+  getDoc,
   getDocs,
+  limit,
+  query,
   serverTimestamp,
+  setDoc,
+  where,
 } from "firebase/firestore";
 import { auth, db } from "./firebase";
 
-export type UserDoc = {
-  uid: string;
-  email: string;
-  username: string;
-  createdAt: any;
-};
-
-export function watchAuth(cb: (u: User | null) => void) {
-  return onAuthStateChanged(auth, cb);
-}
-
-export async function getUserDoc(uid: string) {
-  const snap = await getDoc(doc(db, "users", uid));
-  return snap.exists() ? (snap.data() as UserDoc) : null;
-}
-
 export async function isUsernameTaken(username: string) {
-  const q = query(collection(db, "users"), where("username", "==", username));
-  const snap = await getDocs(q);
+  const u = username.trim().toLowerCase();
+  const qy = query(collection(db, "users"), where("username", "==", u), limit(1));
+  const snap = await getDocs(qy);
   return !snap.empty;
 }
 
-export async function registerWithUsername(
-  email: string,
-  password: string,
-  username: string
-) {
-  username = username.trim().toLowerCase();
+export async function registerUser(email: string, password: string, username: string) {
+  const u = username.trim().toLowerCase();
+  const e = email.trim().toLowerCase();
 
-  if (!username) throw new Error("Username required");
-  if (username.length < 3) throw new Error("Username min 3 chars");
+  const cred = await createUserWithEmailAndPassword(auth, e, password);
 
-  const taken = await isUsernameTaken(username);
-  if (taken) throw new Error("Username already taken");
-
-  const cred = await createUserWithEmailAndPassword(auth, email, password);
-
-  const userDoc: UserDoc = {
-    uid: cred.user.uid,
-    email: cred.user.email || email,
-    username,
+  await setDoc(doc(db, "users", cred.user.uid), {
+    email: e,
+    username: u,
     createdAt: serverTimestamp(),
-  };
+  });
 
-  await setDoc(doc(db, "users", cred.user.uid), userDoc);
   return cred.user;
 }
 
-export async function login(email: string, password: string) {
-  const cred = await signInWithEmailAndPassword(auth, email, password);
+export async function loginUser(email: string, password: string) {
+  const e = email.trim().toLowerCase();
+  const cred = await signInWithEmailAndPassword(auth, e, password);
   return cred.user;
 }
 
-export async function logout() {
+export async function logoutUser() {
   await signOut(auth);
+}
+
+export async function getUserById(uid: string) {
+  const snap = await getDoc(doc(db, "users", uid));
+  if (!snap.exists()) return null;
+  return { uid: snap.id, ...(snap.data() as any) };
 }
