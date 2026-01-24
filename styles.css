@@ -243,7 +243,6 @@ html,body{ height:100%; margin:0; font-family: system-ui,-apple-system,Segoe UI,
   display:flex;
   flex-direction:column;
   gap: 10px;
-  justify-content:flex-end;
 }
 
 .bubble{
