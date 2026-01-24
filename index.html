@@ -2,98 +2,89 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Shivanshcodex</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
+
 <body>
-  <!-- ✅ TOP BAR -->
-  <header class="topbar" id="topbar">
-    <div class="brand">
-      <div class="title">Shivanshcodex</div>
+  <!-- animated background -->
+  <div class="bg" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brandWrap">
+      <div class="brand">Shivanshcodex</div>
       <div class="subtitle">WhatsApp-like chat</div>
     </div>
-
-    <!-- ✅ logout icon only (corner) -->
-    <button class="btn btn-green" id="logoutBtn" aria-label="Logout" title="Logout">⎋</button>
+    <button id="btnLogout" class="btn pill green" style="display:none;">Logout</button>
   </header>
 
-  <!-- background blobs -->
-  <div class="bg" aria-hidden="true">
-    <div class="blob b1"></div>
-    <div class="blob b2"></div>
-    <div class="blob b3"></div>
-    <div class="noise"></div>
-  </div>
+  <!-- LOGIN SCREEN -->
+  <main id="screen-login" class="screen">
+    <section class="card loginCard">
+      <h1>Login</h1>
 
-  <main class="app">
-    <!-- ✅ LOGIN -->
-    <section class="card glass" id="loginCard">
-      <h2>Login</h2>
-
-      <div class="field">
-        <input id="usernameInput" type="text" placeholder="username" autocomplete="username" />
-      </div>
-
-      <div class="field">
-        <input id="passwordInput" type="password" placeholder="password" autocomplete="current-password" />
-      </div>
+      <input id="loginUsername" class="input" placeholder="username" autocomplete="username" />
+      <input id="loginPassword" class="input" placeholder="password" type="password" autocomplete="current-password" />
 
       <div class="row">
-        <button class="btn btn-green btn-pill" id="loginBtn">Login</button>
-        <button class="btn btn-green btn-pill" id="createBtn">Create</button>
+        <button id="btnLogin" class="btn pill green">Login</button>
+        <button id="btnCreate" class="btn pill greenOutline">Create</button>
       </div>
 
-      <div class="tip">2 browsers / incognito me test karo</div>
+      <p class="tip">2 browsers / incognito me test karo</p>
+      <p id="authMsg" class="msg"></p>
+    </section>
+  </main>
+
+  <!-- LIST SCREEN -->
+  <main id="screen-list" class="screen hidden">
+    <section class="card listCard">
+      <div class="listHead">
+        <div>
+          <div class="h">Chats</div>
+          <div class="s" id="meLine">You: —</div>
+        </div>
+      </div>
+
+      <div class="addRow">
+        <input id="addUsername" class="input pillInput" placeholder="Add user by username" />
+        <button id="btnAddUser" class="btn circle green" title="Start chat">+</button>
+      </div>
+
+      <div id="chatList" class="chatList"></div>
+      <p id="listMsg" class="msg"></p>
     </section>
 
-    <!-- ✅ CHAT LIST -->
-    <section class="panel glass" id="listPanel">
-      <div class="panelHead">
-        <div class="panelTitle">Chats</div>
-        <div class="panelSub">You: <span id="meName">-</span></div>
-      </div>
+    <nav class="bottomNav">
+      <button class="navBtn active">Chats</button>
+      <button class="navBtn" id="btnUpdates">Updates</button>
+      <button class="navBtn" id="btnCommunities">Communities</button>
+      <button class="navBtn" id="btnCalls">Calls</button>
+    </nav>
+  </main>
 
-      <div class="addUserRow">
-        <input id="addUserInput" placeholder="Add user by username" />
-        <button class="btnCircle" id="addUserBtn" aria-label="Add user">+</button>
-      </div>
+  <!-- CHAT SCREEN (full page like WhatsApp) -->
+  <main id="screen-chat" class="screen hidden">
+    <section class="chatShell card">
+      <div class="chatTop">
+        <button id="btnBack" class="iconBtn" aria-label="Back">←</button>
 
-      <div class="chatList" id="chatList"></div>
-
-      <div class="bottomTabs">
-        <button class="tab active" id="tabChats">Chats</button>
-        <button class="tab" id="tabUpdates">Updates</button>
-        <button class="tab" id="tabCommunities">Communities</button>
-        <button class="tab" id="tabCalls">Calls</button>
-      </div>
-    </section>
-
-    <!-- ✅ DM -->
-    <section class="dm glass" id="dmPanel">
-      <div class="dmHead">
-        <button class="iconBtn" id="backBtn" aria-label="Back">←</button>
-
-        <div class="dmUser">
-          <div class="dmName" id="dmName">User</div>
-          <div class="dmStatus">
-            <span class="dot"></span>
-            <span id="dmStatusText">Online</span>
-          </div>
+        <div class="chatTitleWrap">
+          <div id="chatTitle" class="chatTitle">Chat</div>
+          <div id="chatStatus" class="chatStatus">—</div>
         </div>
 
-        <button class="iconBtn" id="menuBtn" aria-label="Menu">⋮</button>
+        <button class="iconBtn" title="Menu">⋮</button>
       </div>
 
-      <div class="messages" id="messages"></div>
+      <div id="messages" class="messages"></div>
 
       <div class="composer">
-        <input id="msgInput" placeholder="Message" />
-        <button class="sendBtn" id="sendBtn" aria-label="Send">▶</button>
+        <input id="msgInput" class="input msgInput" placeholder="Message" />
+        <button id="btnSend" class="btn circle green sendBtn" aria-label="Send">➤</button>
       </div>
     </section>
-
-    <div class="toast" id="toast">Coming soon</div>
   </main>
 
   <script type="module" src="./app.js"></script>
