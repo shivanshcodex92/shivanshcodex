@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shivanshcodex</title>
+  <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="topbar">
+    <div>
+      <h1>Shivanshcodex</h1>
+      <span>WhatsApp-like chat</span>
+    </div>
+    <button id="logoutBtn">Logout</button>
+  </header>
+
+  <!-- LOGIN -->
+  <section id="loginBox" class="card">
+    <h2>Login</h2>
+    <input id="email" placeholder="email@example.com" />
+    <input id="password" type="password" placeholder="password" />
+    <input id="username" placeholder="username" />
+    <div class="row">
+      <button id="loginBtn">Login</button>
+      <button id="registerBtn">Create account</button>
+    </div>
+  </section>
+
+  <!-- MAIN APP -->
+  <section id="app" class="app hidden">
+
+    <!-- CHAT LIST -->
+    <aside class="chat-list">
+      <div class="add-user">
+        <input id="searchUser" placeholder="Add user"/>
+        <button id="addUserBtn">+</button>
+      </div>
+      <ul id="chatList"></ul>
+    </aside>
+
+    <!-- CHAT WINDOW -->
+    <main class="chat-window">
+      <div id="chatHeader" class="chat-header">Select a chat</div>
+      <div id="messages" class="messages"></div>
+      <div class="input-box">
+        <input id="messageInput" placeholder="Message"/>
+        <button id="sendBtn">➤</button>
+      </div>
+    </main>
+
+  </section>
+
+  <script type="module" src="./firebase.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
