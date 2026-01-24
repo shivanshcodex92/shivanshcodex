@@ -1,32 +1,11 @@
-// Firebase (CDN)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-analytics.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 import {
-  getAuth,
-  onAuthStateChanged,
-  signOut,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-  addDoc,
-  serverTimestamp,
-  orderBy,
-  limit,
-  onSnapshot,
-  updateDoc,
+  getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp,
+  collection, addDoc, query, where, getDocs, orderBy, limit, onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-/** ✅ YOUR FIREBASE CONFIG (same as you sent) */
+// ===== Firebase config (your API) =====
 const firebaseConfig = {
   apiKey: "AIzaSyDS6wdYNG2Q7ZUNPjUXdOn-Sqb3cLC4NgQ",
   authDomain: "shivanshcodex-5fa03.firebaseapp.com",
@@ -34,395 +13,423 @@ const firebaseConfig = {
   storageBucket: "shivanshcodex-5fa03.firebasestorage.app",
   messagingSenderId: "160989825267",
   appId: "1:160989825267:web:891e3ac888a46df3920f86",
-  measurementId: "G-76T69H9HM5",
+  measurementId: "G-76T69H9HM5"
 };
 
 const app = initializeApp(firebaseConfig);
-getAnalytics(app);
-
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// DOM
-const loginCard = document.getElementById("loginCard");
-const appCard = document.getElementById("appCard");
+// ===== UI refs =====
+const screenLogin = document.getElementById("screen-login");
+const screenList  = document.getElementById("screen-list");
+const screenChat  = document.getElementById("screen-chat");
 
-const usernameInput = document.getElementById("usernameInput");
-const passwordInput = document.getElementById("passwordInput");
+const btnLogout = document.getElementById("btnLogout");
+const btnBack   = document.getElementById("btnBack");
 
-const loginBtn = document.getElementById("loginBtn");
-const createBtn = document.getElementById("createBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const loginError = document.getElementById("loginError");
+const loginUsername = document.getElementById("loginUsername");
+const loginPassword = document.getElementById("loginPassword");
+const btnLogin = document.getElementById("btnLogin");
+const btnCreate = document.getElementById("btnCreate");
+const authMsg = document.getElementById("authMsg");
 
-const meName = document.getElementById("meName");
+const meLine = document.getElementById("meLine");
+const addUsername = document.getElementById("addUsername");
+const btnAddUser = document.getElementById("btnAddUser");
+const chatListEl = document.getElementById("chatList");
+const listMsg = document.getElementById("listMsg");
 
-const addUserInput = document.getElementById("addUserInput");
-const addUserBtn = document.getElementById("addUserBtn");
-
-const chatList = document.getElementById("chatList");
-
-const chatName = document.getElementById("chatName");
+const chatTitle = document.getElementById("chatTitle");
 const chatStatus = document.getElementById("chatStatus");
-
 const messagesEl = document.getElementById("messages");
-const messageInput = document.getElementById("messageInput");
-const sendBtn = document.getElementById("sendBtn");
+const msgInput = document.getElementById("msgInput");
+const btnSend = document.getElementById("btnSend");
 
-// ✅ NEW refs for UI control
-const composerWrap = document.getElementById("composerWrap");
-const emptyState = document.getElementById("emptyState");
+// bottom nav coming soon
+["btnUpdates","btnCommunities","btnCalls"].forEach(id=>{
+  const el = document.getElementById(id);
+  if (el) el.onclick = () => alert("Coming soon");
+});
 
-let currentUser = null;
-let currentUsername = null;
-
-let activeChatId = null;
-let activeOtherUid = null;
-let activeOtherUsername = null;
+// ===== state =====
+let currentUser = null;     // { uid, username }
+let currentChatId = null;   // string | null
+let currentOther = null;    // { uid, username } | null
 
 let unsubChats = null;
-let unsubMessages = null;
+let unsubMsgs = null;
 
-// helpers
-function usernameToEmail(username) {
-  // fake email mapping, so you can login with username+password (no gmail needed)
-  const safe = String(username || "").trim().toLowerCase().replace(/[^a-z0-9._-]/g, "");
-  return `${safe}@shivanshcodex.local`;
+// ===== helpers =====
+const show = (el) => el.classList.remove("hidden");
+const hide = (el) => el.classList.add("hidden");
+
+function emailFromUsername(username){
+  // fake email for firebase email/pass auth
+  return `${username.toLowerCase()}@shivanshcodex.local`;
 }
 
-function escapeHtml(s) {
-  return String(s || "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+function cleanUsername(x){
+  return (x||"").trim().toLowerCase();
 }
 
-function formatTime(ts) {
-  try {
-    const d = ts?.toDate ? ts.toDate() : new Date();
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  } catch {
-    return "";
-  }
+function fmtTime(ts){
+  if(!ts) return "";
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  let h = d.getHours(); let m = d.getMinutes();
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12; if(h===0) h=12;
+  const mm = String(m).padStart(2,"0");
+  return `${h}:${mm} ${ampm}`;
 }
 
-async function getUsernameByUid(uid) {
-  const snap = await getDoc(doc(db, "users", uid));
-  return snap.exists() ? snap.data().username : null;
-}
+function renderScreens(){
+  btnLogout.style.display = currentUser ? "inline-flex" : "none";
 
-async function findUserByUsername(username) {
-  const uname = String(username || "").trim().toLowerCase();
-  if (!uname) return null;
-
-  const qy = query(collection(db, "users"), where("username", "==", uname), limit(1));
-  const snap = await getDocs(qy);
-  if (snap.empty) return null;
-
-  const d = snap.docs[0];
-  return { uid: d.id, ...d.data() };
-}
-
-function makeChatId(uid1, uid2) {
-  return [uid1, uid2].sort().join("_");
-}
-
-// UI switches
-function showLogin() {
-  loginCard.style.display = "block";
-  appCard.style.display = "none";
-}
-
-function showApp() {
-  loginCard.style.display = "none";
-  appCard.style.display = "grid";
-
-  // ✅ default state: no chat selected
-  composerWrap.style.display = "none";
-  emptyState.style.display = "block";
-  chatName.textContent = "Select a chat";
-  chatStatus.textContent = "—";
-}
-
-// Auth
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    currentUser = null;
-    currentUsername = null;
-    cleanupRealtime();
-    showLogin();
+  if(!currentUser){
+    show(screenLogin); hide(screenList); hide(screenChat);
     return;
   }
 
-  currentUser = user;
-  currentUsername = await getUsernameByUid(user.uid);
-  if (!currentUsername) currentUsername = "user";
+  hide(screenLogin);
 
-  meName.textContent = currentUsername;
-
-  // set online
-  await setDoc(
-    doc(db, "users", user.uid),
-    { username: currentUsername.toLowerCase(), online: true, lastSeen: serverTimestamp() },
-    { merge: true }
-  );
-
-  showApp();
-  listenChats();
-});
-
-// Login / Create
-loginBtn.addEventListener("click", async () => {
-  loginError.textContent = "";
-  const uname = usernameInput.value.trim().toLowerCase();
-  const pass = passwordInput.value.trim();
-  if (!uname || !pass) return (loginError.textContent = "Username & password required");
-
-  try {
-    await signInWithEmailAndPassword(auth, usernameToEmail(uname), pass);
-  } catch (e) {
-    loginError.textContent = e?.message || "Login failed";
+  if(currentChatId){
+    hide(screenList); show(screenChat);
+  }else{
+    show(screenList); hide(screenChat);
   }
-});
+}
 
-createBtn.addEventListener("click", async () => {
-  loginError.textContent = "";
-  const uname = usernameInput.value.trim().toLowerCase();
-  const pass = passwordInput.value.trim();
-  if (!uname || !pass) return (loginError.textContent = "Username & password required");
+// ===== AUTH (username+password UX) =====
+btnCreate.onclick = async () => {
+  authMsg.textContent = "";
+  const username = cleanUsername(loginUsername.value);
+  const password = (loginPassword.value || "").trim();
 
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, usernameToEmail(uname), pass);
+  if(!username || !password){
+    authMsg.textContent = "username & password required";
+    return;
+  }
 
-    // create user profile
+  try{
+    const email = emailFromUsername(username);
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+
+    // store profile in users/{uid}
     await setDoc(doc(db, "users", cred.user.uid), {
-      username: uname,
+      uid: cred.user.uid,
+      username,
+      createdAt: serverTimestamp(),
       online: true,
       lastSeen: serverTimestamp(),
     });
 
-    // also update display immediately
-    meName.textContent = uname;
-  } catch (e) {
-    loginError.textContent = e?.message || "Create account failed";
+    authMsg.textContent = "Account created ✅";
+  }catch(e){
+    console.error(e);
+    authMsg.textContent = e?.message || String(e);
   }
-});
+};
 
-// Logout
-logoutBtn.addEventListener("click", async () => {
-  if (currentUser) {
-    await updateDoc(doc(db, "users", currentUser.uid), {
-      online: false,
-      lastSeen: serverTimestamp(),
-    });
+btnLogin.onclick = async () => {
+  authMsg.textContent = "";
+  const username = cleanUsername(loginUsername.value);
+  const password = (loginPassword.value || "").trim();
+
+  if(!username || !password){
+    authMsg.textContent = "username & password required";
+    return;
   }
 
-  // ✅ reset UI state
-  composerWrap.style.display = "none";
-  emptyState.style.display = "block";
+  try{
+    const email = emailFromUsername(username);
+    await signInWithEmailAndPassword(auth, email, password);
+  }catch(e){
+    console.error(e);
+    authMsg.textContent = e?.message || String(e);
+  }
+};
 
+btnLogout.onclick = async () => {
   await signOut(auth);
-});
+};
 
-// Add user -> start chat
-addUserBtn.addEventListener("click", async () => {
-  const uname = addUserInput.value.trim().toLowerCase();
-  addUserInput.value = "";
-  if (!uname || !currentUser) return;
+// auth state listener
+onAuthStateChanged(auth, async (user)=>{
+  // cleanup listeners
+  if(unsubChats){ unsubChats(); unsubChats=null; }
+  if(unsubMsgs){ unsubMsgs(); unsubMsgs=null; }
 
-  const other = await findUserByUsername(uname);
-  if (!other) return alert("User not found");
-
-  if (other.uid === currentUser.uid) return alert("Cannot chat with yourself");
-
-  const chatId = makeChatId(currentUser.uid, other.uid);
-  const chatRef = doc(db, "chats", chatId);
-
-  const snap = await getDoc(chatRef);
-  if (!snap.exists()) {
-    await setDoc(chatRef, {
-      members: [currentUser.uid, other.uid],
-      memberUsernames: {
-        [currentUser.uid]: currentUsername,
-        [other.uid]: other.username,
-      },
-      lastMessage: "",
-      lastMessageAt: serverTimestamp(),
-      unread: {
-        [currentUser.uid]: 0,
-        [other.uid]: 0,
-      },
-    });
+  if(!user){
+    currentUser = null;
+    currentChatId = null;
+    currentOther = null;
+    messagesEl.innerHTML = "";
+    chatListEl.innerHTML = "";
+    renderScreens();
+    return;
   }
 
-  openChat(chatId, other.uid, other.username);
+  // load user profile
+  const snap = await getDoc(doc(db, "users", user.uid));
+  let username = snap.exists() ? (snap.data().username || "") : "";
+
+  // if profile missing, fallback from email
+  if(!username && user.email){
+    username = user.email.split("@")[0];
+    await setDoc(doc(db, "users", user.uid), { uid:user.uid, username }, { merge:true });
+  }
+
+  currentUser = { uid: user.uid, username };
+  await setDoc(doc(db, "users", user.uid), { online:true, lastSeen: serverTimestamp() }, { merge:true });
+
+  meLine.textContent = `You: ${username}`;
+  currentChatId = null;
+  currentOther = null;
+
+  renderScreens();
+  subscribeChatsList();
 });
 
-// Chat list
-function listenChats() {
-  if (!currentUser) return;
-
-  if (unsubChats) unsubChats();
-
-  const qy = query(
-    collection(db, "chats"),
-    where("members", "array-contains", currentUser.uid),
-    orderBy("lastMessageAt", "desc")
-  );
-
-  unsubChats = onSnapshot(qy, async (snap) => {
-    chatList.innerHTML = "";
-
-    if (snap.empty) {
-      chatList.innerHTML = `<div class="muted">No chats yet. Add user to start.</div>`;
-      return;
-    }
-
-    for (const d of snap.docs) {
-      const data = d.data();
-      const chatId = d.id;
-
-      const otherUid = data.members.find((x) => x !== currentUser.uid);
-      const otherUsername =
-        data?.memberUsernames?.[otherUid] || (await getUsernameByUid(otherUid)) || "user";
-
-      const lastMsg = data.lastMessage || "";
-      const lastAt = data.lastMessageAt;
-      const time = lastAt ? formatTime(lastAt) : "";
-      const unreadCount = data?.unread?.[currentUser.uid] || 0;
-
-      // online status (read from users doc)
-      let online = false;
-      try {
-        const u = await getDoc(doc(db, "users", otherUid));
-        online = u.exists() ? !!u.data().online : false;
-      } catch {}
-
-      const row = document.createElement("div");
-      row.className = `chatRow ${activeChatId === chatId ? "active" : ""}`;
-      row.innerHTML = `
-        <div class="avatar">${escapeHtml(otherUsername[0] || "U").toUpperCase()}</div>
-        <div class="chatMeta">
-          <div class="chatTop">
-            <div class="chatUser">${escapeHtml(otherUsername)}</div>
-            <div class="chatTime">${escapeHtml(time)}</div>
-          </div>
-          <div class="chatBottom">
-            <div class="chatPreview">${escapeHtml(lastMsg)}</div>
-            <div class="chatRight">
-              <span class="dot ${online ? "on" : ""}"></span>
-              ${unreadCount > 0 ? `<span class="badge">${unreadCount}</span>` : ""}
-            </div>
-          </div>
-        </div>
-      `;
-
-      row.addEventListener("click", () => openChat(chatId, otherUid, otherUsername));
-      chatList.appendChild(row);
-    }
-  });
+// ===== find user by username =====
+async function findUserByUsername(username){
+  const q1 = query(collection(db, "users"), where("username", "==", username));
+  const qs = await getDocs(q1);
+  if(qs.empty) return null;
+  const d = qs.docs[0].data();
+  return { uid: d.uid || qs.docs[0].id, username: d.username };
 }
 
-async function openChat(chatId, otherUid, otherUsername) {
-  activeChatId = chatId;
-  activeOtherUid = otherUid;
-  activeOtherUsername = otherUsername;
-
-  // ✅ show composer only when a chat is opened
-  composerWrap.style.display = "flex";
-  emptyState.style.display = "none";
-
-  chatName.textContent = otherUsername;
-  chatStatus.textContent = "Online"; // (simple)
-
-  // reset unread for me
-  await updateDoc(doc(db, "chats", chatId), {
-    [`unread.${currentUser.uid}`]: 0,
-  });
-
-  listenMessages();
+// ===== chat id deterministic =====
+function makeChatId(a,b){
+  return [a,b].sort().join("_");
 }
 
-function listenMessages() {
-  if (!activeChatId) return;
+// ===== start chat =====
+async function startChat(myUid, otherUid){
+  const chatId = makeChatId(myUid, otherUid);
+  const ref = doc(db, "chats", chatId);
+  const snap = await getDoc(ref);
 
-  if (unsubMessages) unsubMessages();
+  if(!snap.exists()){
+    await setDoc(ref, {
+      users: [myUid, otherUid],
+      createdAt: serverTimestamp(),
+      lastMessage: "",
+      lastAt: serverTimestamp(),
+      unread: { [myUid]: 0, [otherUid]: 0 }
+    });
+  }
+  return chatId;
+}
+
+// ===== Add user => open chat screen (NOT bottom panel) =====
+btnAddUser.onclick = async () => {
+  listMsg.textContent = "";
+  const uname = cleanUsername(addUsername.value);
+  if(!uname) return;
+
+  try{
+    const other = await findUserByUsername(uname);
+    if(!other){ listMsg.textContent = "User not found"; return; }
+    if(other.uid === currentUser.uid){ listMsg.textContent = "Khud ko add nahi kar sakte"; return; }
+
+    const chatId = await startChat(currentUser.uid, other.uid);
+    addUsername.value = "";
+
+    await openChat(chatId, other);
+  }catch(e){
+    console.error(e);
+    listMsg.textContent = e?.message || String(e);
+  }
+};
+
+// ===== open chat full screen =====
+async function openChat(chatId, other){
+  currentChatId = chatId;
+  currentOther = other;
+
+  chatTitle.textContent = other.username;
+  chatStatus.textContent = "Online"; // realtime status later
 
   messagesEl.innerHTML = "";
+  renderScreens();
 
-  const msgsRef = collection(db, "chats", activeChatId, "messages");
-  const qy = query(msgsRef, orderBy("createdAt", "asc"), limit(200));
+  // mark unread to 0 for me
+  await updateDoc(doc(db, "chats", chatId), {
+    [`unread.${currentUser.uid}`]: 0
+  });
 
-  unsubMessages = onSnapshot(qy, (snap) => {
+  subscribeMessages(chatId);
+
+  // subscribe other user's online
+  onSnapshot(doc(db, "users", other.uid), (snap)=>{
+    if(!snap.exists()) return;
+    const d = snap.data();
+    if(d.online){
+      chatStatus.textContent = "Online";
+    }else{
+      chatStatus.textContent = d.lastSeen ? ("last seen " + fmtTime(d.lastSeen)) : "Offline";
+    }
+  });
+}
+
+// back to list
+btnBack.onclick = () => {
+  if(unsubMsgs){ unsubMsgs(); unsubMsgs=null; }
+  currentChatId = null;
+  currentOther = null;
+  messagesEl.innerHTML = "";
+  renderScreens();
+};
+
+// ===== subscribe chats list (WhatsApp style) =====
+function subscribeChatsList(){
+  if(unsubChats) unsubChats();
+
+  const q1 = query(collection(db, "chats"), where("users", "array-contains", currentUser.uid));
+  unsubChats = onSnapshot(q1, async (snap)=>{
+    const rows = [];
+
+    for(const docSnap of snap.docs){
+      const c = docSnap.data();
+      const chatId = docSnap.id;
+
+      const otherUid = (c.users || []).find(u => u !== currentUser.uid);
+      if(!otherUid) continue;
+
+      // get other profile
+      const otherSnap = await getDoc(doc(db, "users", otherUid));
+      const otherUsername = otherSnap.exists() ? otherSnap.data().username : "user";
+      const online = otherSnap.exists() ? !!otherSnap.data().online : false;
+
+      const unreadCount = (c.unread && c.unread[currentUser.uid]) ? c.unread[currentUser.uid] : 0;
+
+      rows.push({
+        chatId,
+        other: { uid: otherUid, username: otherUsername },
+        lastMessage: c.lastMessage || "",
+        lastAt: c.lastAt || c.createdAt,
+        unreadCount,
+        online
+      });
+    }
+
+    // sort by lastAt desc
+    rows.sort((a,b)=>{
+      const ta = a.lastAt?.toMillis ? a.lastAt.toMillis() : 0;
+      const tb = b.lastAt?.toMillis ? b.lastAt.toMillis() : 0;
+      return tb - ta;
+    });
+
+    renderChatList(rows);
+  });
+}
+
+function renderChatList(rows){
+  chatListEl.innerHTML = "";
+
+  if(!rows.length){
+    chatListEl.innerHTML = `<div style="color:rgba(255,255,255,.75); padding:10px;">No chats yet. Add a user to start.</div>`;
+    return;
+  }
+
+  for(const r of rows){
+    const div = document.createElement("div");
+    div.className = "chatRow";
+
+    div.innerHTML = `
+      <div class="avatar">${(r.other.username||"?")[0].toUpperCase()}</div>
+      <div class="mid">
+        <div class="name">${r.other.username}</div>
+        <div class="last">${r.lastMessage || "—"}</div>
+      </div>
+      <div class="right">
+        <div class="time">${fmtTime(r.lastAt)}</div>
+        <div class="badges">
+          ${r.online ? `<span class="dot"></span>` : ``}
+          ${r.unreadCount ? `<span class="unread">${r.unreadCount}</span>` : ``}
+        </div>
+      </div>
+    `;
+
+    div.onclick = () => openChat(r.chatId, r.other);
+    chatListEl.appendChild(div);
+  }
+}
+
+// ===== subscribe messages =====
+function subscribeMessages(chatId){
+  if(unsubMsgs) unsubMsgs();
+
+  const q1 = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt", "asc"), limit(200));
+  unsubMsgs = onSnapshot(q1, (snap)=>{
     messagesEl.innerHTML = "";
-
-    snap.forEach((d) => {
+    snap.forEach((d)=>{
       const m = d.data();
-      const mine = m.senderUid === currentUser.uid;
+      const isMe = m.senderId === currentUser.uid;
 
       const bubble = document.createElement("div");
-      bubble.className = `bubble ${mine ? "mine" : "theirs"}`;
+      bubble.className = "bubble" + (isMe ? " me" : "");
       bubble.innerHTML = `
-        <div class="txt">${escapeHtml(m.text || "")}</div>
-        <div class="tm">${escapeHtml(formatTime(m.createdAt))}</div>
+        <div>${escapeHtml(m.text || "")}</div>
+        <div class="meta">${fmtTime(m.createdAt)}</div>
       `;
       messagesEl.appendChild(bubble);
     });
 
+    // auto scroll bottom
     messagesEl.scrollTop = messagesEl.scrollHeight;
   });
 }
 
-// Send message
-sendBtn.addEventListener("click", sendMessage);
-messageInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") sendMessage();
+btnSend.onclick = async () => {
+  const text = (msgInput.value || "").trim();
+  if(!text || !currentChatId) return;
+
+  msgInput.value = "";
+  await sendMessage(currentChatId, currentUser.uid, text);
+};
+
+msgInput.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter") btnSend.click();
 });
 
-async function sendMessage() {
-  const text = messageInput.value.trim();
-  if (!text || !activeChatId) return;
+// ===== send message =====
+async function sendMessage(chatId, myUid, text){
+  const chatRef = doc(db, "chats", chatId);
 
-  messageInput.value = "";
+  // who is other?
+  const parts = chatId.split("_");
+  const otherUid = parts[0] === myUid ? parts[1] : parts[0];
 
-  const msgRef = collection(db, "chats", activeChatId, "messages");
-
-  await addDoc(msgRef, {
+  await addDoc(collection(db, "chats", chatId, "messages"), {
     text,
-    senderUid: currentUser.uid,
-    senderUsername: currentUsername,
-    createdAt: serverTimestamp(),
+    senderId: myUid,
+    createdAt: serverTimestamp()
   });
 
-  // update chat last message + unread for other
-  const chatRef = doc(db, "chats", activeChatId);
+  // update chat preview + unread counts
   const chatSnap = await getDoc(chatRef);
-  if (chatSnap.exists()) {
-    const data = chatSnap.data();
-    const otherUid = data.members.find((x) => x !== currentUser.uid);
-    const otherUnread = (data?.unread?.[otherUid] || 0) + 1;
+  const unread = (chatSnap.exists() && chatSnap.data().unread) ? chatSnap.data().unread : {};
+  const otherUnread = (unread[otherUid] || 0) + 1;
 
-    await updateDoc(chatRef, {
-      lastMessage: text,
-      lastMessageAt: serverTimestamp(),
-      [`unread.${otherUid}`]: otherUnread,
-    });
-  }
+  await updateDoc(chatRef, {
+    lastMessage: text,
+    lastAt: serverTimestamp(),
+    [`unread.${otherUid}`]: otherUnread
+  });
 }
 
-// cleanup
-function cleanupRealtime() {
-  if (unsubChats) unsubChats();
-  if (unsubMessages) unsubMessages();
-  unsubChats = null;
-  unsubMessages = null;
-
-  activeChatId = null;
-  activeOtherUid = null;
-  activeOtherUsername = null;
-
-  chatList.innerHTML = "";
-  messagesEl.innerHTML = `<div id="emptyState" class="emptyState">Select a chat</div>`;
+// ===== small util =====
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
+
+// initial
+renderScreens();
