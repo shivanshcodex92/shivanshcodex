@@ -13,6 +13,8 @@
   --border:rgba(255,255,255,.08);
   --shadow: 0 18px 50px rgba(0,0,0,.35);
   --radius:22px;
+
+  --kb: 0px; /* keyboard offset */
 }
 
 *{ box-sizing:border-box; }
@@ -55,7 +57,7 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   100%{ transform: translate3d(0,-10px,0) scale(1.02); }
 }
 
-/* ✅ topbar fixed & balanced */
+/* ✅ topbar balanced */
 .topbar{
   position:sticky; top:0;
   padding: 14px 14px;
@@ -70,7 +72,6 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   border-bottom:1px solid var(--border);
 }
 
-/* ✅ left side auto shrink properly */
 .brandWrap{
   display:flex;
   flex-direction:column;
@@ -96,7 +97,7 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   text-overflow: ellipsis;
 }
 
-/* ✅ right side fixed width so “big/small box” issue gone */
+/* ✅ right side fixed width = no big/small mismatch */
 .topActions{
   display:flex;
   gap:10px;
@@ -106,7 +107,7 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   width: 148px;
 }
 
-/* dvh for mobile */
+/* screens */
 .screen{
   min-height: calc(100dvh - 74px);
   padding: 16px;
@@ -170,12 +171,12 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
 .green:hover{ filter:brightness(1.05); }
 
 .greenOutline{
-  background: rgba(0,0,0,.12);
+  background: rgba(0,0,0,.14);
   color: var(--text);
-  border: 1px solid rgba(37,211,102,.65);
+  border: 1px solid rgba(37,211,102,.70);
 }
 
-/* ✅ Install & Logout uniform size */
+/* ✅ Install + Logout same size */
 #btnInstall, .logoutBtn{
   width: 148px;
   height: 42px;
@@ -188,17 +189,12 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   letter-spacing: .2px;
 }
 
-/* ✅ Install looks premium */
-#btnInstall{
-  background: rgba(0,0,0,.14);
-  border: 1px solid rgba(37,211,102,.70);
-}
 #btnInstall:hover{ filter: brightness(1.06); }
 
-/* ✅ Logout more professional */
 .logoutBtn{
   background: rgba(255,255,255,.10);
   border: 1px solid rgba(255,255,255,.18);
+  color: var(--text);
   backdrop-filter: blur(10px);
 }
 .logoutBtn:hover{ filter: brightness(1.06); }
@@ -298,7 +294,6 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   overflow:hidden;
 }
 
-/* clean chatTop */
 .chatTop{
   display:flex;
   align-items:center;
@@ -308,6 +303,7 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   border-bottom:1px solid var(--border);
   background: rgba(0,0,0,.18);
 }
+
 .iconBtn{
   width:40px; height:40px;
   border-radius: 999px;
@@ -320,6 +316,7 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   justify-content:center;
   flex-shrink:0;
 }
+
 .chatTitleWrap{
   flex:1;
   min-width:0;
@@ -368,6 +365,28 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   text-align: right;
 }
 
+/* ✅ Insta-like keyboard behaviour (only in chat mode) */
+body.chatMode{
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* composer fixed only when chat is open */
+body.chatMode .composer{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom) + var(--kb, 0px));
+  width: min(720px, 100%);
+  margin: 0 auto;
+  z-index: 50;
+}
+
+/* give messages space for composer */
+body.chatMode #messages{
+  padding-bottom: calc(84px + env(safe-area-inset-bottom));
+}
+
 /* composer */
 .composer{
   padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
@@ -376,6 +395,7 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   border-top:1px solid var(--border);
   background: rgba(0,0,0,.16);
 }
+
 .msgInput{
   margin:0;
   background: rgba(0,0,0,.28);
@@ -390,4 +410,4 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   .brand{ font-size: 28px; }
   .topActions{ width: 132px; }
   #btnInstall, .logoutBtn{ width: 132px; }
-  }
+}
