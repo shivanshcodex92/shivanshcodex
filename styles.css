@@ -55,7 +55,7 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   100%{ transform: translate3d(0,-10px,0) scale(1.02); }
 }
 
-/* ✅ topbar fixed & clean */
+/* ✅ topbar fixed & balanced */
 .topbar{
   position:sticky; top:0;
   padding: 14px 14px;
@@ -64,21 +64,46 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   align-items:center;
   gap: 12px;
 
-  min-height: 74px;          /* ✅ stable height */
+  min-height: 74px;
   backdrop-filter: blur(12px);
   background: linear-gradient(180deg, rgba(0,0,0,.28), rgba(0,0,0,.06));
   border-bottom:1px solid var(--border);
 }
-.brandWrap{ display:flex; flex-direction:column; min-width:0; }
-.brand{ font-size:32px; font-weight:900; letter-spacing:.2px; line-height:1.05; }
-.subtitle{ color:var(--muted); margin-top:3px; font-size:13px; }
 
+/* ✅ left side auto shrink properly */
+.brandWrap{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  flex: 1;
+}
+
+.brand{
+  font-size:32px;
+  font-weight:900;
+  letter-spacing:.2px;
+  line-height:1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.subtitle{
+  color:var(--muted);
+  margin-top:3px;
+  font-size:13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ✅ right side fixed width so “big/small box” issue gone */
 .topActions{
   display:flex;
   gap:10px;
   align-items:center;
   justify-content:flex-end;
   flex-shrink:0;
+  width: 148px;
 }
 
 /* dvh for mobile */
@@ -150,9 +175,9 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   border: 1px solid rgba(37,211,102,.65);
 }
 
-/* ✅ Install button perfect size/center */
-#btnInstall{
-  min-width: 120px;
+/* ✅ Install & Logout uniform size */
+#btnInstall, .logoutBtn{
+  width: 148px;
   height: 42px;
   padding: 0 18px;
   display:flex;
@@ -163,24 +188,27 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   letter-spacing: .2px;
 }
 
-/* professional logout */
-.logoutBtn{
-  height: 42px;
-  padding: 0 16px;
-  min-width: 110px;
+/* ✅ Install looks premium */
+#btnInstall{
+  background: rgba(0,0,0,.14);
+  border: 1px solid rgba(37,211,102,.70);
+}
+#btnInstall:hover{ filter: brightness(1.06); }
 
+/* ✅ Logout more professional */
+.logoutBtn{
   background: rgba(255,255,255,.10);
-  color: var(--text);
   border: 1px solid rgba(255,255,255,.18);
-  backdrop-filter: blur(8px);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight: 900;
+  backdrop-filter: blur(10px);
 }
 .logoutBtn:hover{ filter: brightness(1.06); }
 
-.tip{ color: var(--muted); margin: 10px 0 0 0; font-size: 15px; line-height: 1.5; }
+.tip{
+  color: var(--muted);
+  margin: 10px 0 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
 .msg{ margin: 10px 0 0 0; color: #ffd9d9; min-height: 20px; }
 
 /* list */
@@ -219,7 +247,14 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
 
 .mid{ flex:1; min-width:0; }
 .name{ font-size:17px; font-weight:900; }
-.last{ color: var(--muted); font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
+.last{
+  color: var(--muted);
+  font-size:14px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  margin-top:2px;
+}
 
 .right{ display:flex; flex-direction:column; align-items:flex-end; gap: 8px; }
 .time{ color: rgba(255,255,255,.65); font-size:12px; }
@@ -295,7 +330,7 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
 .chatTitle{ font-weight:900; font-size:17px; line-height:1.2; }
 .chatStatus{ color: var(--muted); font-size:12px; line-height:1.2; margin-top:2px; }
 
-/* cleaner messages */
+/* messages */
 .messages{
   flex:1;
   padding: 14px 12px;
@@ -350,9 +385,9 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
 .msgInput::placeholder{ color: rgba(255,255,255,.6); }
 .sendBtn{ font-size:18px; }
 
-/* ✅ small screen tweak (optional) */
+/* small screen tweak */
 @media (max-width: 360px){
   .brand{ font-size: 28px; }
-  #btnInstall{ min-width: 108px; }
-  .logoutBtn{ min-width: 100px; }
-}
+  .topActions{ width: 132px; }
+  #btnInstall, .logoutBtn{ width: 132px; }
+  }
