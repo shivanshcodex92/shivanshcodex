@@ -21,6 +21,14 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+/* ✅ Register Service Worker (IMPORTANT for install prompt) */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", async () => {
+    try { await navigator.serviceWorker.register("./sw.js"); }
+    catch(e){ console.warn("SW register failed", e); }
+  });
+}
+
 // ===== UI refs =====
 const screenLogin = document.getElementById("screen-login");
 const screenList  = document.getElementById("screen-list");
@@ -29,7 +37,6 @@ const screenChat  = document.getElementById("screen-chat");
 const btnLogout = document.getElementById("btnLogout");
 const btnBack   = document.getElementById("btnBack");
 
-// ✅ install button
 const btnInstall = document.getElementById("btnInstall");
 
 const loginUsername = document.getElementById("loginUsername");
@@ -71,14 +78,11 @@ const show = (el) => el.classList.remove("hidden");
 const hide = (el) => el.classList.add("hidden");
 
 function emailFromUsername(username){
-  // fake email for firebase email/pass auth
   return `${username.toLowerCase()}@shivanshcodex.local`;
 }
-
 function cleanUsername(x){
   return (x||"").trim().toLowerCase();
 }
-
 function fmtTime(ts){
   if(!ts) return "";
   const d = ts.toDate ? ts.toDate() : new Date(ts);
@@ -88,7 +92,6 @@ function fmtTime(ts){
   const mm = String(m).padStart(2,"0");
   return `${h}:${mm} ${ampm}`;
 }
-
 function relTime(ts){
   if(!ts) return "";
   const d = ts.toDate ? ts.toDate() : new Date(ts);
@@ -138,7 +141,7 @@ btnInstall?.addEventListener("click", async ()=>{
 function renderScreens(){
   btnLogout.style.display = currentUser ? "inline-flex" : "none";
 
-  // ✅ Install button ONLY on login screen
+  // ✅ Install only on login screen
   const showInstall = !currentUser && canInstall && !isStandalone();
   if(btnInstall) btnInstall.style.display = showInstall ? "inline-flex" : "none";
 
@@ -156,7 +159,7 @@ function renderScreens(){
   }
 }
 
-// ===== AUTH (username+password UX) =====
+// ===== AUTH =====
 btnCreate.onclick = async () => {
   authMsg.textContent = "";
   const username = cleanUsername(loginUsername.value);
@@ -209,9 +212,8 @@ btnLogout.onclick = async () => {
   await signOut(auth);
 };
 
-// auth state listener
+// auth listener
 onAuthStateChanged(auth, async (user)=>{
-  // cleanup listeners
   if(unsubChats){ unsubChats(); unsubChats=null; }
   if(unsubMsgs){ unsubMsgs(); unsubMsgs=null; }
 
@@ -225,11 +227,9 @@ onAuthStateChanged(auth, async (user)=>{
     return;
   }
 
-  // load user profile
   const snap = await getDoc(doc(db, "users", user.uid));
   let username = snap.exists() ? (snap.data().username || "") : "";
 
-  // if profile missing, fallback from email
   if(!username && user.email){
     username = user.email.split("@")[0];
     await setDoc(doc(db, "users", user.uid), { uid:user.uid, username }, { merge:true });
@@ -246,7 +246,7 @@ onAuthStateChanged(auth, async (user)=>{
   subscribeChatsList();
 });
 
-// ===== find user by username =====
+// ===== find user =====
 async function findUserByUsername(username){
   const q1 = query(collection(db, "users"), where("username", "==", username));
   const qs = await getDocs(q1);
@@ -255,12 +255,8 @@ async function findUserByUsername(username){
   return { uid: d.uid || qs.docs[0].id, username: d.username };
 }
 
-// ===== chat id deterministic =====
-function makeChatId(a,b){
-  return [a,b].sort().join("_");
-}
+function makeChatId(a,b){ return [a,b].sort().join("_"); }
 
-// ===== start chat =====
 async function startChat(myUid, otherUid){
   const chatId = makeChatId(myUid, otherUid);
   const ref = doc(db, "chats", chatId);
@@ -278,7 +274,7 @@ async function startChat(myUid, otherUid){
   return chatId;
 }
 
-// ===== Add user => open chat screen =====
+// add user
 btnAddUser.onclick = async () => {
   listMsg.textContent = "";
   const uname = cleanUsername(addUsername.value);
@@ -291,7 +287,6 @@ btnAddUser.onclick = async () => {
 
     const chatId = await startChat(currentUser.uid, other.uid);
     addUsername.value = "";
-
     await openChat(chatId, other);
   }catch(e){
     console.error(e);
@@ -299,7 +294,7 @@ btnAddUser.onclick = async () => {
   }
 };
 
-// ===== seen marker (receiver marks messages as seen) =====
+// seen marker
 async function markMessagesAsSeen(chatId){
   if(!currentUser || !currentOther) return;
   if(isMarkingSeen) return;
@@ -307,12 +302,7 @@ async function markMessagesAsSeen(chatId){
 
   try{
     const otherUid = currentOther.uid;
-
-    const q1 = query(
-      collection(db, "chats", chatId, "messages"),
-      orderBy("createdAt", "desc"),
-      limit(200)
-    );
+    const q1 = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt", "desc"), limit(200));
     const snap = await getDocs(q1);
 
     const batch = writeBatch(db);
@@ -337,7 +327,7 @@ async function markMessagesAsSeen(chatId){
   }
 }
 
-// ===== open chat full screen =====
+// open chat
 async function openChat(chatId, other){
   currentChatId = chatId;
   currentOther = other;
@@ -348,14 +338,10 @@ async function openChat(chatId, other){
   messagesEl.innerHTML = "";
   renderScreens();
 
-  // mark unread to 0 for me
-  await updateDoc(doc(db, "chats", chatId), {
-    [`unread.${currentUser.uid}`]: 0
-  });
+  await updateDoc(doc(db, "chats", chatId), { [`unread.${currentUser.uid}`]: 0 });
 
   subscribeMessages(chatId);
 
-  // subscribe other user's online
   onSnapshot(doc(db, "users", other.uid), (snap)=>{
     if(!snap.exists()) return;
     const d = snap.data();
@@ -366,11 +352,10 @@ async function openChat(chatId, other){
     }
   });
 
-  // initial seen mark
   await markMessagesAsSeen(chatId);
 }
 
-// back to list
+// back
 btnBack.onclick = () => {
   if(unsubMsgs){ unsubMsgs(); unsubMsgs=null; }
   currentChatId = null;
@@ -379,7 +364,7 @@ btnBack.onclick = () => {
   renderScreens();
 };
 
-// ===== subscribe chats list =====
+// chats list
 function subscribeChatsList(){
   if(unsubChats) unsubChats();
 
@@ -452,7 +437,7 @@ function renderChatList(rows){
   }
 }
 
-// ===== subscribe messages =====
+// messages
 function subscribeMessages(chatId){
   if(unsubMsgs) unsubMsgs();
 
@@ -486,8 +471,6 @@ function subscribeMessages(chatId){
     });
 
     messagesEl.scrollTop = messagesEl.scrollHeight;
-
-    // mark seen for incoming messages
     await markMessagesAsSeen(chatId);
   });
 }
@@ -495,7 +478,6 @@ function subscribeMessages(chatId){
 btnSend.onclick = async () => {
   const text = (msgInput.value || "").trim();
   if(!text || !currentChatId) return;
-
   msgInput.value = "";
   await sendMessage(currentChatId, currentUser.uid, text);
 };
@@ -504,11 +486,10 @@ msgInput.addEventListener("keydown", (e)=>{
   if(e.key === "Enter") btnSend.click();
 });
 
-// ===== send message =====
+// send
 async function sendMessage(chatId, myUid, text){
   const chatRef = doc(db, "chats", chatId);
 
-  // who is other?
   const parts = chatId.split("_");
   const otherUid = parts[0] === myUid ? parts[1] : parts[0];
 
@@ -530,7 +511,7 @@ async function sendMessage(chatId, myUid, text){
   });
 }
 
-// ===== small util =====
+// util
 function escapeHtml(str){
   return String(str)
     .replaceAll("&","&amp;")
