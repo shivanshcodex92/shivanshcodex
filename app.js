@@ -6,7 +6,7 @@ import {
   writeBatch
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-// ===== Firebase config =====
+// ===== Firebase config (your API) =====
 const firebaseConfig = {
   apiKey: "AIzaSyDS6wdYNG2Q7ZUNPjUXdOn-Sqb3cLC4NgQ",
   authDomain: "shivanshcodex-5fa03.firebaseapp.com",
@@ -28,6 +28,9 @@ const screenChat  = document.getElementById("screen-chat");
 
 const btnLogout = document.getElementById("btnLogout");
 const btnBack   = document.getElementById("btnBack");
+
+// ✅ install button
+const btnInstall = document.getElementById("btnInstall");
 
 const loginUsername = document.getElementById("loginUsername");
 const loginPassword = document.getElementById("loginPassword");
@@ -68,6 +71,7 @@ const show = (el) => el.classList.remove("hidden");
 const hide = (el) => el.classList.add("hidden");
 
 function emailFromUsername(username){
+  // fake email for firebase email/pass auth
   return `${username.toLowerCase()}@shivanshcodex.local`;
 }
 
@@ -101,8 +105,42 @@ function relTime(ts){
   return `${day}d ago`;
 }
 
+/* ========= Install button (login page only) ========= */
+let deferredPrompt = null;
+let canInstall = false;
+
+function isStandalone(){
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+window.addEventListener("beforeinstallprompt", (e)=>{
+  e.preventDefault();
+  deferredPrompt = e;
+  canInstall = true;
+  renderScreens();
+});
+
+window.addEventListener("appinstalled", ()=>{
+  deferredPrompt = null;
+  canInstall = false;
+  renderScreens();
+});
+
+btnInstall?.addEventListener("click", async ()=>{
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  canInstall = false;
+  renderScreens();
+});
+
 function renderScreens(){
   btnLogout.style.display = currentUser ? "inline-flex" : "none";
+
+  // ✅ Install button ONLY on login screen
+  const showInstall = !currentUser && canInstall && !isStandalone();
+  if(btnInstall) btnInstall.style.display = showInstall ? "inline-flex" : "none";
 
   if(!currentUser){
     show(screenLogin); hide(screenList); hide(screenChat);
@@ -118,7 +156,7 @@ function renderScreens(){
   }
 }
 
-// ===== AUTH =====
+// ===== AUTH (username+password UX) =====
 btnCreate.onclick = async () => {
   authMsg.textContent = "";
   const username = cleanUsername(loginUsername.value);
@@ -173,6 +211,7 @@ btnLogout.onclick = async () => {
 
 // auth state listener
 onAuthStateChanged(auth, async (user)=>{
+  // cleanup listeners
   if(unsubChats){ unsubChats(); unsubChats=null; }
   if(unsubMsgs){ unsubMsgs(); unsubMsgs=null; }
 
@@ -186,9 +225,11 @@ onAuthStateChanged(auth, async (user)=>{
     return;
   }
 
+  // load user profile
   const snap = await getDoc(doc(db, "users", user.uid));
   let username = snap.exists() ? (snap.data().username || "") : "";
 
+  // if profile missing, fallback from email
   if(!username && user.email){
     username = user.email.split("@")[0];
     await setDoc(doc(db, "users", user.uid), { uid:user.uid, username }, { merge:true });
@@ -214,10 +255,12 @@ async function findUserByUsername(username){
   return { uid: d.uid || qs.docs[0].id, username: d.username };
 }
 
+// ===== chat id deterministic =====
 function makeChatId(a,b){
   return [a,b].sort().join("_");
 }
 
+// ===== start chat =====
 async function startChat(myUid, otherUid){
   const chatId = makeChatId(myUid, otherUid);
   const ref = doc(db, "chats", chatId);
@@ -235,7 +278,7 @@ async function startChat(myUid, otherUid){
   return chatId;
 }
 
-// ===== Add user =====
+// ===== Add user => open chat screen =====
 btnAddUser.onclick = async () => {
   listMsg.textContent = "";
   const uname = cleanUsername(addUsername.value);
@@ -256,14 +299,15 @@ btnAddUser.onclick = async () => {
   }
 };
 
-// ===== Seen marker (Instagram style) =====
+// ===== seen marker (receiver marks messages as seen) =====
 async function markMessagesAsSeen(chatId){
   if(!currentUser || !currentOther) return;
   if(isMarkingSeen) return;
-
   isMarkingSeen = true;
+
   try{
     const otherUid = currentOther.uid;
+
     const q1 = query(
       collection(db, "chats", chatId, "messages"),
       orderBy("createdAt", "desc"),
@@ -276,13 +320,10 @@ async function markMessagesAsSeen(chatId){
 
     snap.forEach((docSnap)=>{
       const m = docSnap.data();
-      // only mark messages that other sent to me
       if(m.senderId === otherUid){
         const seenBy = m.seenBy || {};
         if(!seenBy[currentUser.uid]){
-          batch.update(docSnap.ref, {
-            [`seenBy.${currentUser.uid}`]: serverTimestamp()
-          });
+          batch.update(docSnap.ref, { [`seenBy.${currentUser.uid}`]: serverTimestamp() });
           count++;
         }
       }
@@ -296,7 +337,7 @@ async function markMessagesAsSeen(chatId){
   }
 }
 
-// ===== open chat =====
+// ===== open chat full screen =====
 async function openChat(chatId, other){
   currentChatId = chatId;
   currentOther = other;
@@ -419,7 +460,6 @@ function subscribeMessages(chatId){
   unsubMsgs = onSnapshot(q1, async (snap)=>{
     messagesEl.innerHTML = "";
 
-    // determine other uid for "seen"
     const myUid = currentUser.uid;
     const otherUid = currentOther?.uid;
 
@@ -427,10 +467,6 @@ function subscribeMessages(chatId){
       const m = d.data();
       const isMe = m.senderId === myUid;
 
-      const bubble = document.createElement("div");
-      bubble.className = "bubble" + (isMe ? " me" : "");
-
-      // Seen label only for my messages, based on other user's seenBy timestamp
       let seenLabel = "";
       if(isMe && otherUid){
         const seenTs = m.seenBy && m.seenBy[otherUid];
@@ -439,18 +475,19 @@ function subscribeMessages(chatId){
         }
       }
 
+      const bubble = document.createElement("div");
+      bubble.className = "bubble" + (isMe ? " me" : "");
       bubble.innerHTML = `
         <div>${escapeHtml(m.text || "")}</div>
         <div class="meta">${fmtTime(m.createdAt)}</div>
         ${seenLabel}
       `;
-
       messagesEl.appendChild(bubble);
     });
 
     messagesEl.scrollTop = messagesEl.scrollHeight;
 
-    // Mark incoming messages as seen (throttled by isMarkingSeen)
+    // mark seen for incoming messages
     await markMessagesAsSeen(chatId);
   });
 }
@@ -479,7 +516,6 @@ async function sendMessage(chatId, myUid, text){
     text,
     senderId: myUid,
     createdAt: serverTimestamp(),
-    // sender has "seen" their own message at send time
     seenBy: { [myUid]: serverTimestamp() }
   });
 
