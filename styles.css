@@ -15,7 +15,36 @@
 }
 
 *{ box-sizing:border-box; }
-html,body{ height:100%; margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial; color:var(--text); }
+
+/* ===== Professional tap/focus fixes (remove blue highlight) ===== */
+*{
+  -webkit-tap-highlight-color: transparent; /* remove blue flash on tap */
+  -webkit-touch-callout: none;
+}
+
+/* remove default ugly focus outline */
+:focus{ outline: none; }
+
+/* clean focus for keyboard users (optional, professional) */
+:focus-visible{
+  outline: 2px solid rgba(37,211,102,.55);
+  outline-offset: 3px;
+  border-radius: 14px;
+}
+
+/* smoother tap feel + no selection */
+button, .btn, .chatRow, .navBtn, .iconBtn{
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action: manipulation;
+}
+
+html,body{
+  height:100%;
+  margin:0;
+  font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  color:var(--text);
+}
 
 .bg{
   position:fixed; inset:0;
@@ -88,30 +117,44 @@ html,body{ height:100%; margin:0; font-family: system-ui,-apple-system,Segoe UI,
 }
 
 .row{ display:flex; gap:12px; }
+
 .btn{
   border:0;
   cursor:pointer;
   user-select:none;
+  -webkit-user-select:none;
   transition: transform .08s ease, filter .2s ease;
 }
 .btn:active{ transform: scale(.98); }
 
-.pill{ border-radius: 560px; padding: 14px 18px; font-weight:400; min-width: 100px; }
-.circle{ width:48px; height:48px; border-radius: 900px; display:inline-flex; align-items:center; justify-content:center; font-size:18px; font-weight:500; }
+.pill{
+  border-radius: 560px;
+  padding: 14px 18px;
+  font-weight:400;
+  min-width: 100px;
+}
 
-.green{ background: var(--green); color:#063014; box-shadow: 0 10px 24px rgba(37,211,102,.22); }
+.circle{
+  width:48px; height:48px;
+  border-radius: 900px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  font-weight:500;
+}
+
+.green{
+  background: var(--green);
+  color:#063014;
+  box-shadow: 0 10px 24px rgba(37,211,102,.22);
+}
 .green:hover{ filter:brightness(1.05); }
 
 .greenOutline{
   background: transparent;
   color: var(--text);
   border: 1px solid rgba(37,211,102,.55);
-}
-
-.installBtn{
-  padding: 10px 14px;
-  min-width: auto;
-  font-weight: 800;
 }
 
 .tip{ color: var(--muted); margin: 10px 0 0 0; }
@@ -122,7 +165,12 @@ html,body{ height:100%; margin:0; font-family: system-ui,-apple-system,Segoe UI,
   margin-bottom: 74px; /* bottom nav space */
 }
 
-.listHead{ display:flex; justify-content:space-between; align-items:center; padding: 4px 6px 10px; }
+.listHead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding: 4px 6px 10px;
+}
 .h{ font-size:24px; font-weight:800; }
 .s{ color:var(--muted); font-size:14px; margin-top:2px; }
 
@@ -153,8 +201,10 @@ html,body{ height:100%; margin:0; font-family: system-ui,-apple-system,Segoe UI,
   border-radius: 18px;
   background: rgba(0,0,0,.18);
   border:1px solid rgba(255,255,255,.06);
+  transition: transform .08s ease, background .2s ease, border-color .2s ease;
 }
 .chatRow:active{ transform: scale(.99); }
+.chatRow:hover{ border-color: rgba(255,255,255,.10); }
 
 .avatar{
   width:46px; height:46px;
@@ -166,7 +216,14 @@ html,body{ height:100%; margin:0; font-family: system-ui,-apple-system,Segoe UI,
 
 .mid{ flex:1; min-width:0; }
 .name{ font-size:18px; font-weight:800; }
-.last{ color: var(--muted); font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
+.last{
+  color: var(--muted);
+  font-size:14px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  margin-top:2px;
+}
 
 .right{ display:flex; flex-direction:column; align-items:flex-end; gap: 8px; }
 .time{ color: rgba(255,255,255,.65); font-size:12px; }
@@ -205,7 +262,9 @@ html,body{ height:100%; margin:0; font-family: system-ui,-apple-system,Segoe UI,
   font-weight:700;
   padding: 10px 12px;
   border-radius: 14px;
+  transition: background .2s ease, transform .08s ease;
 }
+.navBtn:active{ transform: scale(.98); }
 .navBtn.active{
   color: var(--text);
   background: rgba(37,211,102,.18);
@@ -236,7 +295,9 @@ html,body{ height:100%; margin:0; font-family: system-ui,-apple-system,Segoe UI,
   border:1px solid rgba(255,255,255,.10);
   color: var(--text);
   font-size:18px;
+  transition: transform .08s ease, background .2s ease;
 }
+.iconBtn:active{ transform: scale(.98); }
 
 .chatTitleWrap{ flex:1; min-width:0; }
 .chatTitle{ font-weight:900; font-size:18px; }
