@@ -5,15 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Shivanshcodex</title>
 
-  <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#083237" />
-  <link rel="icon" href="./icon-192.png" />
+  <!-- ✅ PWA -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#071b1e" />
 
   <link rel="stylesheet" href="./styles.css" />
 </head>
 
 <body>
-  <!-- animated background -->
   <div class="bg" aria-hidden="true"></div>
 
   <header class="topbar">
@@ -23,11 +22,11 @@
     </div>
 
     <div class="topActions">
-      <!-- ✅ Install button (only login page + only when browser allows) -->
-      <button id="btnInstall" class="btn greenOutline" style="display:none;">Install</button>
+      <!-- ✅ Install button (login only; JS control) -->
+      <button id="btnInstall" class="btn pill greenOutline" style="display:none;">Install</button>
 
-      <!-- ✅ Logout professional -->
-      <button id="btnLogout" class="logoutBtn" style="display:none;">Logout</button>
+      <!-- ✅ Professional Logout -->
+      <button id="btnLogout" class="btn pill logoutBtn" style="display:none;">Logout</button>
     </div>
   </header>
 
@@ -45,7 +44,8 @@
       </div>
 
       <p class="tip">
-        Username + password daalo. Admin: <b>shivanshcodex</b>
+        Username + password daalo. App install karna ho to login page pe Install button aa jayega (jab browser allow kare).
+        Admin: <b>shivanshcodex</b>
       </p>
 
       <p id="authMsg" class="msg"></p>
