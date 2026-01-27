@@ -2,10 +2,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebas
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp,
-  collection, addDoc, query, where, getDocs, orderBy, limit, onSnapshot
+  collection, addDoc, query, where, getDocs, orderBy, limit, onSnapshot,
+  writeBatch
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-// ===== Firebase config (your API) =====
+// ===== Firebase config =====
 const firebaseConfig = {
   apiKey: "AIzaSyDS6wdYNG2Q7ZUNPjUXdOn-Sqb3cLC4NgQ",
   authDomain: "shivanshcodex-5fa03.firebaseapp.com",
@@ -19,30 +20,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-
-// ===== PWA Install button =====
-const btnInstall = document.getElementById("btnInstall");
-let deferredPrompt = null;
-
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  if (btnInstall) btnInstall.style.display = "inline-flex";
-});
-
-if (btnInstall) {
-  btnInstall.onclick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    btnInstall.style.display = "none";
-  };
-}
-
-window.addEventListener("appinstalled", () => {
-  if (btnInstall) btnInstall.style.display = "none";
-});
 
 // ===== UI refs =====
 const screenLogin = document.getElementById("screen-login");
@@ -83,14 +60,14 @@ let currentOther = null;    // { uid, username } | null
 
 let unsubChats = null;
 let unsubMsgs = null;
-let unsubOtherOnline = null;
+
+let isMarkingSeen = false;
 
 // ===== helpers =====
 const show = (el) => el.classList.remove("hidden");
 const hide = (el) => el.classList.add("hidden");
 
 function emailFromUsername(username){
-  // fake email for firebase email/pass auth
   return `${username.toLowerCase()}@shivanshcodex.local`;
 }
 
@@ -106,6 +83,22 @@ function fmtTime(ts){
   h = h % 12; if(h===0) h=12;
   const mm = String(m).padStart(2,"0");
   return `${h}:${mm} ${ampm}`;
+}
+
+function relTime(ts){
+  if(!ts) return "";
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const diff = Date.now() - d.getTime();
+  const sec = Math.floor(diff/1000);
+  if(sec < 5) return "just now";
+  if(sec < 60) return `${sec}s ago`;
+  const min = Math.floor(sec/60);
+  if(min < 60) return `${min} min ago`;
+  const hr = Math.floor(min/60);
+  if(hr < 24) return `${hr}h ago`;
+  const day = Math.floor(hr/24);
+  if(day === 1) return "yesterday";
+  return `${day}d ago`;
 }
 
 function renderScreens(){
@@ -125,7 +118,7 @@ function renderScreens(){
   }
 }
 
-// ===== AUTH (username+password UX) =====
+// ===== AUTH =====
 btnCreate.onclick = async () => {
   authMsg.textContent = "";
   const username = cleanUsername(loginUsername.value);
@@ -140,7 +133,6 @@ btnCreate.onclick = async () => {
     const email = emailFromUsername(username);
     const cred = await createUserWithEmailAndPassword(auth, email, password);
 
-    // store profile in users/{uid}
     await setDoc(doc(db, "users", cred.user.uid), {
       uid: cred.user.uid,
       username,
@@ -176,16 +168,13 @@ btnLogin.onclick = async () => {
 };
 
 btnLogout.onclick = async () => {
-  await setDoc(doc(db, "users", currentUser?.uid), { online:false, lastSeen: serverTimestamp() }, { merge:true }).catch(()=>{});
   await signOut(auth);
 };
 
 // auth state listener
 onAuthStateChanged(auth, async (user)=>{
-  // cleanup listeners
   if(unsubChats){ unsubChats(); unsubChats=null; }
   if(unsubMsgs){ unsubMsgs(); unsubMsgs=null; }
-  if(unsubOtherOnline){ unsubOtherOnline(); unsubOtherOnline=null; }
 
   if(!user){
     currentUser = null;
@@ -197,11 +186,9 @@ onAuthStateChanged(auth, async (user)=>{
     return;
   }
 
-  // load user profile
   const snap = await getDoc(doc(db, "users", user.uid));
   let username = snap.exists() ? (snap.data().username || "") : "";
 
-  // if profile missing, fallback from email
   if(!username && user.email){
     username = user.email.split("@")[0];
     await setDoc(doc(db, "users", user.uid), { uid:user.uid, username }, { merge:true });
@@ -227,12 +214,10 @@ async function findUserByUsername(username){
   return { uid: d.uid || qs.docs[0].id, username: d.username };
 }
 
-// ===== chat id deterministic =====
 function makeChatId(a,b){
   return [a,b].sort().join("_");
 }
 
-// ===== start chat =====
 async function startChat(myUid, otherUid){
   const chatId = makeChatId(myUid, otherUid);
   const ref = doc(db, "chats", chatId);
@@ -250,7 +235,7 @@ async function startChat(myUid, otherUid){
   return chatId;
 }
 
-// ===== Add user => open chat screen (NOT bottom panel) =====
+// ===== Add user =====
 btnAddUser.onclick = async () => {
   listMsg.textContent = "";
   const uname = cleanUsername(addUsername.value);
@@ -271,13 +256,53 @@ btnAddUser.onclick = async () => {
   }
 };
 
-// ===== open chat full screen =====
+// ===== Seen marker (Instagram style) =====
+async function markMessagesAsSeen(chatId){
+  if(!currentUser || !currentOther) return;
+  if(isMarkingSeen) return;
+
+  isMarkingSeen = true;
+  try{
+    const otherUid = currentOther.uid;
+    const q1 = query(
+      collection(db, "chats", chatId, "messages"),
+      orderBy("createdAt", "desc"),
+      limit(200)
+    );
+    const snap = await getDocs(q1);
+
+    const batch = writeBatch(db);
+    let count = 0;
+
+    snap.forEach((docSnap)=>{
+      const m = docSnap.data();
+      // only mark messages that other sent to me
+      if(m.senderId === otherUid){
+        const seenBy = m.seenBy || {};
+        if(!seenBy[currentUser.uid]){
+          batch.update(docSnap.ref, {
+            [`seenBy.${currentUser.uid}`]: serverTimestamp()
+          });
+          count++;
+        }
+      }
+    });
+
+    if(count > 0) await batch.commit();
+  }catch(e){
+    console.error("markMessagesAsSeen error:", e);
+  }finally{
+    isMarkingSeen = false;
+  }
+}
+
+// ===== open chat =====
 async function openChat(chatId, other){
   currentChatId = chatId;
   currentOther = other;
 
   chatTitle.textContent = other.username;
-  chatStatus.textContent = "Online"; // realtime status later
+  chatStatus.textContent = "Online";
 
   messagesEl.innerHTML = "";
   renderScreens();
@@ -290,8 +315,7 @@ async function openChat(chatId, other){
   subscribeMessages(chatId);
 
   // subscribe other user's online
-  if(unsubOtherOnline){ unsubOtherOnline(); unsubOtherOnline=null; }
-  unsubOtherOnline = onSnapshot(doc(db, "users", other.uid), (snap)=>{
+  onSnapshot(doc(db, "users", other.uid), (snap)=>{
     if(!snap.exists()) return;
     const d = snap.data();
     if(d.online){
@@ -300,19 +324,21 @@ async function openChat(chatId, other){
       chatStatus.textContent = d.lastSeen ? ("last seen " + fmtTime(d.lastSeen)) : "Offline";
     }
   });
+
+  // initial seen mark
+  await markMessagesAsSeen(chatId);
 }
 
 // back to list
 btnBack.onclick = () => {
   if(unsubMsgs){ unsubMsgs(); unsubMsgs=null; }
-  if(unsubOtherOnline){ unsubOtherOnline(); unsubOtherOnline=null; }
   currentChatId = null;
   currentOther = null;
   messagesEl.innerHTML = "";
   renderScreens();
 };
 
-// ===== subscribe chats list (WhatsApp style) =====
+// ===== subscribe chats list =====
 function subscribeChatsList(){
   if(unsubChats) unsubChats();
 
@@ -327,7 +353,6 @@ function subscribeChatsList(){
       const otherUid = (c.users || []).find(u => u !== currentUser.uid);
       if(!otherUid) continue;
 
-      // get other profile
       const otherSnap = await getDoc(doc(db, "users", otherUid));
       const otherUsername = otherSnap.exists() ? otherSnap.data().username : "user";
       const online = otherSnap.exists() ? !!otherSnap.data().online : false;
@@ -344,7 +369,6 @@ function subscribeChatsList(){
       });
     }
 
-    // sort by lastAt desc
     rows.sort((a,b)=>{
       const ta = a.lastAt?.toMillis ? a.lastAt.toMillis() : 0;
       const tb = b.lastAt?.toMillis ? b.lastAt.toMillis() : 0;
@@ -371,7 +395,7 @@ function renderChatList(rows){
       <div class="avatar">${(r.other.username||"?")[0].toUpperCase()}</div>
       <div class="mid">
         <div class="name">${r.other.username}</div>
-        <div class="last">${r.lastMessage || "—"}</div>
+        <div class="last">${escapeHtml(r.lastMessage || "—")}</div>
       </div>
       <div class="right">
         <div class="time">${fmtTime(r.lastAt)}</div>
@@ -392,23 +416,42 @@ function subscribeMessages(chatId){
   if(unsubMsgs) unsubMsgs();
 
   const q1 = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt", "asc"), limit(200));
-  unsubMsgs = onSnapshot(q1, (snap)=>{
+  unsubMsgs = onSnapshot(q1, async (snap)=>{
     messagesEl.innerHTML = "";
+
+    // determine other uid for "seen"
+    const myUid = currentUser.uid;
+    const otherUid = currentOther?.uid;
+
     snap.forEach((d)=>{
       const m = d.data();
-      const isMe = m.senderId === currentUser.uid;
+      const isMe = m.senderId === myUid;
 
       const bubble = document.createElement("div");
       bubble.className = "bubble" + (isMe ? " me" : "");
+
+      // Seen label only for my messages, based on other user's seenBy timestamp
+      let seenLabel = "";
+      if(isMe && otherUid){
+        const seenTs = m.seenBy && m.seenBy[otherUid];
+        if(seenTs){
+          seenLabel = `<div class="seen">Seen ${relTime(seenTs)}</div>`;
+        }
+      }
+
       bubble.innerHTML = `
         <div>${escapeHtml(m.text || "")}</div>
         <div class="meta">${fmtTime(m.createdAt)}</div>
+        ${seenLabel}
       `;
+
       messagesEl.appendChild(bubble);
     });
 
-    // auto scroll bottom
     messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    // Mark incoming messages as seen (throttled by isMarkingSeen)
+    await markMessagesAsSeen(chatId);
   });
 }
 
@@ -435,10 +478,11 @@ async function sendMessage(chatId, myUid, text){
   await addDoc(collection(db, "chats", chatId, "messages"), {
     text,
     senderId: myUid,
-    createdAt: serverTimestamp()
+    createdAt: serverTimestamp(),
+    // sender has "seen" their own message at send time
+    seenBy: { [myUid]: serverTimestamp() }
   });
 
-  // update chat preview + unread counts
   const chatSnap = await getDoc(chatRef);
   const unread = (chatSnap.exists() && chatSnap.data().unread) ? chatSnap.data().unread : {};
   const otherUnread = (unread[otherUid] || 0) + 1;
