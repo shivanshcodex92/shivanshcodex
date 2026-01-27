@@ -108,6 +108,12 @@ html,body{ height:100%; margin:0; font-family: system-ui,-apple-system,Segoe UI,
   border: 1px solid rgba(37,211,102,.55);
 }
 
+.installBtn{
+  padding: 10px 14px;
+  min-width: auto;
+  font-weight: 800;
+}
+
 .tip{ color: var(--muted); margin: 10px 0 0 0; }
 .msg{ margin: 10px 0 0 0; color: #ffd9d9; min-height: 20px; }
 
