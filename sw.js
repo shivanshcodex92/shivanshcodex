@@ -1,4 +1,4 @@
-const CACHE = "shivanshcodex-v20";
+const CACHE = "shivanshcodex-v21";
 
 const ASSETS = [
   "./",
