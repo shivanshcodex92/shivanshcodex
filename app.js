@@ -2,11 +2,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebas
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp,
-  collection, addDoc, query, where, getDocs, orderBy, limit, onSnapshot,
-  writeBatch
+  collection, addDoc, query, where, getDocs, orderBy, limit, onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-// ===== Firebase config (your API) =====
+// ===== Firebase config =====
 const firebaseConfig = {
   apiKey: "AIzaSyDS6wdYNG2Q7ZUNPjUXdOn-Sqb3cLC4NgQ",
   authDomain: "shivanshcodex-5fa03.firebaseapp.com",
@@ -21,23 +20,14 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* ✅ Register Service Worker (IMPORTANT for install prompt) */
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", async () => {
-    try { await navigator.serviceWorker.register("./sw.js"); }
-    catch(e){ console.warn("SW register failed", e); }
-  });
-}
-
 // ===== UI refs =====
 const screenLogin = document.getElementById("screen-login");
 const screenList  = document.getElementById("screen-list");
 const screenChat  = document.getElementById("screen-chat");
 
 const btnLogout = document.getElementById("btnLogout");
-const btnBack   = document.getElementById("btnBack");
-
 const btnInstall = document.getElementById("btnInstall");
+const btnBack   = document.getElementById("btnBack");
 
 const loginUsername = document.getElementById("loginUsername");
 const loginPassword = document.getElementById("loginPassword");
@@ -71,8 +61,6 @@ let currentOther = null;    // { uid, username } | null
 let unsubChats = null;
 let unsubMsgs = null;
 
-let isMarkingSeen = false;
-
 // ===== helpers =====
 const show = (el) => el.classList.remove("hidden");
 const hide = (el) => el.classList.add("hidden");
@@ -100,57 +88,65 @@ function relTime(ts){
   if(sec < 5) return "just now";
   if(sec < 60) return `${sec}s ago`;
   const min = Math.floor(sec/60);
-  if(min < 60) return `${min} min ago`;
+  if(min < 60) return `${min}m ago`;
   const hr = Math.floor(min/60);
   if(hr < 24) return `${hr}h ago`;
   const day = Math.floor(hr/24);
-  if(day === 1) return "yesterday";
   return `${day}d ago`;
 }
-
-/* ========= Install button (login page only) ========= */
-let deferredPrompt = null;
-let canInstall = false;
-
-function isStandalone(){
-  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
+
+// ===== PWA (Install button only on login) =====
+let deferredPrompt = null;
 
 window.addEventListener("beforeinstallprompt", (e)=>{
   e.preventDefault();
   deferredPrompt = e;
-  canInstall = true;
-  renderScreens();
+  updateInstallButtonVisibility();
 });
 
 window.addEventListener("appinstalled", ()=>{
   deferredPrompt = null;
-  canInstall = false;
-  renderScreens();
+  updateInstallButtonVisibility();
 });
 
-btnInstall?.addEventListener("click", async ()=>{
+btnInstall.onclick = async () => {
   if(!deferredPrompt) return;
   deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
+  try { await deferredPrompt.userChoice; } catch {}
   deferredPrompt = null;
-  canInstall = false;
-  renderScreens();
-});
+  updateInstallButtonVisibility();
+};
 
+function updateInstallButtonVisibility(){
+  const isLoginVisible = !screenLogin.classList.contains("hidden");
+  btnInstall.style.display = (deferredPrompt && isLoginVisible) ? "inline-flex" : "none";
+}
+
+// ===== render screens =====
 function renderScreens(){
+  // logout visible when logged-in
   btnLogout.style.display = currentUser ? "inline-flex" : "none";
 
-  // ✅ Install only on login screen
-  const showInstall = !currentUser && canInstall && !isStandalone();
-  if(btnInstall) btnInstall.style.display = showInstall ? "inline-flex" : "none";
+  // chatMode class for Insta-like keyboard
+  if(currentChatId) document.body.classList.add("chatMode");
+  else document.body.classList.remove("chatMode");
 
   if(!currentUser){
     show(screenLogin); hide(screenList); hide(screenChat);
+    updateInstallButtonVisibility();
     return;
   }
 
   hide(screenLogin);
+  updateInstallButtonVisibility(); // logged-in => hides install automatically
 
   if(currentChatId){
     hide(screenList); show(screenChat);
@@ -212,7 +208,7 @@ btnLogout.onclick = async () => {
   await signOut(auth);
 };
 
-// auth listener
+// auth state listener
 onAuthStateChanged(auth, async (user)=>{
   if(unsubChats){ unsubChats(); unsubChats=null; }
   if(unsubMsgs){ unsubMsgs(); unsubMsgs=null; }
@@ -255,8 +251,12 @@ async function findUserByUsername(username){
   return { uid: d.uid || qs.docs[0].id, username: d.username };
 }
 
-function makeChatId(a,b){ return [a,b].sort().join("_"); }
+// ===== chat id deterministic =====
+function makeChatId(a,b){
+  return [a,b].sort().join("_");
+}
 
+// ===== start chat =====
 async function startChat(myUid, otherUid){
   const chatId = makeChatId(myUid, otherUid);
   const ref = doc(db, "chats", chatId);
@@ -274,7 +274,7 @@ async function startChat(myUid, otherUid){
   return chatId;
 }
 
-// add user
+// ===== Add user =====
 btnAddUser.onclick = async () => {
   listMsg.textContent = "";
   const uname = cleanUsername(addUsername.value);
@@ -294,40 +294,7 @@ btnAddUser.onclick = async () => {
   }
 };
 
-// seen marker
-async function markMessagesAsSeen(chatId){
-  if(!currentUser || !currentOther) return;
-  if(isMarkingSeen) return;
-  isMarkingSeen = true;
-
-  try{
-    const otherUid = currentOther.uid;
-    const q1 = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt", "desc"), limit(200));
-    const snap = await getDocs(q1);
-
-    const batch = writeBatch(db);
-    let count = 0;
-
-    snap.forEach((docSnap)=>{
-      const m = docSnap.data();
-      if(m.senderId === otherUid){
-        const seenBy = m.seenBy || {};
-        if(!seenBy[currentUser.uid]){
-          batch.update(docSnap.ref, { [`seenBy.${currentUser.uid}`]: serverTimestamp() });
-          count++;
-        }
-      }
-    });
-
-    if(count > 0) await batch.commit();
-  }catch(e){
-    console.error("markMessagesAsSeen error:", e);
-  }finally{
-    isMarkingSeen = false;
-  }
-}
-
-// open chat
+// ===== open chat =====
 async function openChat(chatId, other){
   currentChatId = chatId;
   currentOther = other;
@@ -338,10 +305,19 @@ async function openChat(chatId, other){
   messagesEl.innerHTML = "";
   renderScreens();
 
-  await updateDoc(doc(db, "chats", chatId), { [`unread.${currentUser.uid}`]: 0 });
+  // mark unread to 0 for me
+  await updateDoc(doc(db, "chats", chatId), {
+    [`unread.${currentUser.uid}`]: 0
+  });
 
   subscribeMessages(chatId);
 
+  // ✅ chat open hote hi bottom pe start (reliable)
+  setTimeout(() => {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }, 50);
+
+  // subscribe other user's online
   onSnapshot(doc(db, "users", other.uid), (snap)=>{
     if(!snap.exists()) return;
     const d = snap.data();
@@ -351,11 +327,9 @@ async function openChat(chatId, other){
       chatStatus.textContent = d.lastSeen ? ("last seen " + fmtTime(d.lastSeen)) : "Offline";
     }
   });
-
-  await markMessagesAsSeen(chatId);
 }
 
-// back
+// back to list
 btnBack.onclick = () => {
   if(unsubMsgs){ unsubMsgs(); unsubMsgs=null; }
   currentChatId = null;
@@ -364,7 +338,7 @@ btnBack.onclick = () => {
   renderScreens();
 };
 
-// chats list
+// ===== subscribe chats list =====
 function subscribeChatsList(){
   if(unsubChats) unsubChats();
 
@@ -437,12 +411,48 @@ function renderChatList(rows){
   }
 }
 
-// messages
+// ===== Seen system (mark messages as seen) =====
+async function markMessagesAsSeen(chatId){
+  if(!currentUser || !currentOther) return;
+
+  const myUid = currentUser.uid;
+  const otherUid = currentOther.uid;
+
+  // take last 60 messages from other, mark seen if not already
+  const qSeen = query(
+    collection(db, "chats", chatId, "messages"),
+    orderBy("createdAt", "desc"),
+    limit(60)
+  );
+
+  const snap = await getDocs(qSeen);
+
+  for(const d of snap.docs){
+    const m = d.data();
+    if(m.senderId !== otherUid) continue; // only messages sent by other
+    const already = m.seenBy && m.seenBy[myUid];
+    if(already) continue;
+
+    await updateDoc(doc(db, "chats", chatId, "messages", d.id), {
+      [`seenBy.${myUid}`]: serverTimestamp()
+    });
+  }
+}
+
+// ===== subscribe messages (NO auto-jump while reading old messages) =====
 function subscribeMessages(chatId){
   if(unsubMsgs) unsubMsgs();
 
-  const q1 = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt", "asc"), limit(200));
+  const q1 = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt", "asc"), limit(300));
+
   unsubMsgs = onSnapshot(q1, async (snap)=>{
+    // ✅ stick to bottom only if user was near bottom
+    const threshold = 140;
+    const distanceFromBottom =
+      messagesEl.scrollHeight - (messagesEl.scrollTop + messagesEl.clientHeight);
+    const shouldStickToBottom = distanceFromBottom < threshold;
+    const prevScrollTop = messagesEl.scrollTop;
+
     messagesEl.innerHTML = "";
 
     const myUid = currentUser.uid;
@@ -470,23 +480,39 @@ function subscribeMessages(chatId){
       messagesEl.appendChild(bubble);
     });
 
-    messagesEl.scrollTop = messagesEl.scrollHeight;
+    if(shouldStickToBottom){
+      requestAnimationFrame(() => {
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      });
+      setTimeout(() => {
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }, 50);
+    }else{
+      messagesEl.scrollTop = prevScrollTop;
+    }
+
     await markMessagesAsSeen(chatId);
   });
 }
 
+// ===== send =====
 btnSend.onclick = async () => {
   const text = (msgInput.value || "").trim();
   if(!text || !currentChatId) return;
+
   msgInput.value = "";
   await sendMessage(currentChatId, currentUser.uid, text);
+
+  // ✅ send ke baad always bottom
+  requestAnimationFrame(() => {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  });
 };
 
 msgInput.addEventListener("keydown", (e)=>{
   if(e.key === "Enter") btnSend.click();
 });
 
-// send
 async function sendMessage(chatId, myUid, text){
   const chatRef = doc(db, "chats", chatId);
 
@@ -497,7 +523,7 @@ async function sendMessage(chatId, myUid, text){
     text,
     senderId: myUid,
     createdAt: serverTimestamp(),
-    seenBy: { [myUid]: serverTimestamp() }
+    seenBy: { [myUid]: serverTimestamp() } // sender ka seenBy
   });
 
   const chatSnap = await getDoc(chatRef);
@@ -511,15 +537,32 @@ async function sendMessage(chatId, myUid, text){
   });
 }
 
-// util
-function escapeHtml(str){
-  return String(str)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+// ===== Service Worker register =====
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("./sw.js").catch(()=>{});
 }
+
+// ✅ Insta-like keyboard behavior: page stable, composer moves
+(function keyboardFix(){
+  const root = document.documentElement;
+
+  function updateKeyboardOffset(){
+    const vv = window.visualViewport;
+    if(!vv){
+      root.style.setProperty("--kb", "0px");
+      return;
+    }
+    const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    root.style.setProperty("--kb", kb + "px");
+  }
+
+  if(window.visualViewport){
+    window.visualViewport.addEventListener("resize", updateKeyboardOffset);
+    window.visualViewport.addEventListener("scroll", updateKeyboardOffset);
+  }
+  window.addEventListener("resize", updateKeyboardOffset);
+  updateKeyboardOffset();
+})();
 
 // initial
 renderScreens();
