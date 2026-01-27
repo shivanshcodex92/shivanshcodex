@@ -20,6 +20,30 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// ===== PWA Install button =====
+const btnInstall = document.getElementById("btnInstall");
+let deferredPrompt = null;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (btnInstall) btnInstall.style.display = "inline-flex";
+});
+
+if (btnInstall) {
+  btnInstall.onclick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    btnInstall.style.display = "none";
+  };
+}
+
+window.addEventListener("appinstalled", () => {
+  if (btnInstall) btnInstall.style.display = "none";
+});
+
 // ===== UI refs =====
 const screenLogin = document.getElementById("screen-login");
 const screenList  = document.getElementById("screen-list");
@@ -59,6 +83,7 @@ let currentOther = null;    // { uid, username } | null
 
 let unsubChats = null;
 let unsubMsgs = null;
+let unsubOtherOnline = null;
 
 // ===== helpers =====
 const show = (el) => el.classList.remove("hidden");
@@ -151,6 +176,7 @@ btnLogin.onclick = async () => {
 };
 
 btnLogout.onclick = async () => {
+  await setDoc(doc(db, "users", currentUser?.uid), { online:false, lastSeen: serverTimestamp() }, { merge:true }).catch(()=>{});
   await signOut(auth);
 };
 
@@ -159,6 +185,7 @@ onAuthStateChanged(auth, async (user)=>{
   // cleanup listeners
   if(unsubChats){ unsubChats(); unsubChats=null; }
   if(unsubMsgs){ unsubMsgs(); unsubMsgs=null; }
+  if(unsubOtherOnline){ unsubOtherOnline(); unsubOtherOnline=null; }
 
   if(!user){
     currentUser = null;
@@ -263,7 +290,8 @@ async function openChat(chatId, other){
   subscribeMessages(chatId);
 
   // subscribe other user's online
-  onSnapshot(doc(db, "users", other.uid), (snap)=>{
+  if(unsubOtherOnline){ unsubOtherOnline(); unsubOtherOnline=null; }
+  unsubOtherOnline = onSnapshot(doc(db, "users", other.uid), (snap)=>{
     if(!snap.exists()) return;
     const d = snap.data();
     if(d.online){
@@ -277,6 +305,7 @@ async function openChat(chatId, other){
 // back to list
 btnBack.onclick = () => {
   if(unsubMsgs){ unsubMsgs(); unsubMsgs=null; }
+  if(unsubOtherOnline){ unsubOtherOnline(); unsubOtherOnline=null; }
   currentChatId = null;
   currentOther = null;
   messagesEl.innerHTML = "";
