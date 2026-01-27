@@ -1,4 +1,4 @@
-const CACHE = "shivanshcodex-v8"; // ✅ change this when you update files
+const CACHE = "shivanshcodex-v10";
 
 const ASSETS = [
   "./",
@@ -11,9 +11,7 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(ASSETS))
-  );
+  e.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)));
   self.skipWaiting();
 });
 
