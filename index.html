@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Shivanshcodex</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#25D366">
+
   <link rel="stylesheet" href="./styles.css" />
 </head>
 
@@ -16,7 +21,11 @@
       <div class="brand">Shivanshcodex💫</div>
       <div class="subtitle">Same like Whatsapp❤️</div>
     </div>
-    <button id="btnLogout" class="btn green" style="display:none;">➜]</button>
+
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button id="btnInstall" class="btn greenOutline pill installBtn" style="display:none;">Install</button>
+      <button id="btnLogout" class="btn green" style="display:none;">➜]</button>
+    </div>
   </header>
 
   <!-- LOGIN SCREEN -->
@@ -89,6 +98,15 @@ To contact the admin, use the username: Shivanshcodex.</p>
       </div>
     </section>
   </main>
+
+  <!-- Service Worker register -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js");
+      });
+    }
+  </script>
 
   <script type="module" src="./app.js"></script>
 </body>
