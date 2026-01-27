@@ -5,15 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Shivanshcodex</title>
 
-  <!-- PWA -->
-  <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#25D366">
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#071b1e" />
 
   <link rel="stylesheet" href="./styles.css" />
 </head>
 
 <body>
-  <!-- animated background -->
   <div class="bg" aria-hidden="true"></div>
 
   <header class="topbar">
@@ -21,11 +19,7 @@
       <div class="brand">Shivanshcodex💫</div>
       <div class="subtitle">Same like Whatsapp❤️</div>
     </div>
-
-    <div style="display:flex; gap:10px; align-items:center;">
-      <button id="btnInstall" class="btn greenOutline pill installBtn" style="display:none;">Install</button>
-      <button id="btnLogout" class="btn green" style="display:none;">➜]</button>
-    </div>
+    <button id="btnLogout" class="btn green circle" style="display:none;" title="Logout">➜]</button>
   </header>
 
   <!-- LOGIN SCREEN -->
@@ -41,10 +35,12 @@
         <button id="btnCreate" class="btn pill greenOutline">Create</button>
       </div>
 
-      <p class="tip">Please enter your username and password, then tap on the “Create” button to create your account.
-Make sure to save or remember your username and password, as you will need them later.
-In the future, you can simply enter the same username and password to log in to your account successfully.
-To contact the admin, use the username: Shivanshcodex.</p>
+      <p class="tip">
+        Please enter your username and password, then tap on the “Create” button to create your account.
+        Make sure to save or remember your username and password.
+        To contact the admin, use the username: Shivanshcodex.
+      </p>
+
       <p id="authMsg" class="msg"></p>
     </section>
   </main>
@@ -76,7 +72,7 @@ To contact the admin, use the username: Shivanshcodex.</p>
     </nav>
   </main>
 
-  <!-- CHAT SCREEN (full page like WhatsApp) -->
+  <!-- CHAT SCREEN -->
   <main id="screen-chat" class="screen hidden">
     <section class="chatShell card">
       <div class="chatTop">
@@ -98,15 +94,6 @@ To contact the admin, use the username: Shivanshcodex.</p>
       </div>
     </section>
   </main>
-
-  <!-- Service Worker register -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js");
-      });
-    }
-  </script>
 
   <script type="module" src="./app.js"></script>
 </body>
