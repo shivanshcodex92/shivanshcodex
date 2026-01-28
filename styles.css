@@ -14,7 +14,7 @@
   --shadow: 0 18px 50px rgba(0,0,0,.35);
   --radius:22px;
 
-  --kb: 0px; /* (optional) keyboard offset if you use it */
+  --kb: 0px;
 }
 
 *{ box-sizing:border-box; }
@@ -25,7 +25,7 @@ html,body{
   color:var(--text);
 }
 
-/* ✅ remove blue highlight */
+/* remove blue highlight */
 html, body, *{ -webkit-tap-highlight-color: rgba(0,0,0,0); }
 button, .btn, .chatRow, .navBtn, .iconBtn{
   user-select:none;
@@ -57,7 +57,7 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   100%{ transform: translate3d(0,-10px,0) scale(1.02); }
 }
 
-/* ✅ topbar fixed & balanced */
+/* topbar */
 .topbar{
   position:sticky; top:0;
   padding: 14px 14px;
@@ -72,7 +72,6 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   border-bottom:1px solid var(--border);
 }
 
-/* ✅ left side auto shrink properly */
 .brandWrap{
   display:flex;
   flex-direction:column;
@@ -98,14 +97,13 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   text-overflow: ellipsis;
 }
 
-/* ✅ FIX: right side no fixed width (name hide nahi hoga) */
 .topActions{
   display:flex;
   gap:10px;
   align-items:center;
   justify-content:flex-end;
   flex-shrink:0;
-  width: auto;            /* ✅ was 148px */
+  width: auto;
   max-width: 50%;
 }
 
@@ -178,30 +176,28 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   border: 1px solid rgba(37,211,102,.65);
 }
 
-/* ✅ FIX: Install & Logout responsive (no overflow, no app name hide) */
+/* Install & Logout responsive */
 #btnInstall, .logoutBtn{
-  width: auto;               /* ✅ was 200px */
-  min-width: 88px;           /* ✅ */
-  max-width: 140px;          /* ✅ */
-  height: 40px;              /* ✅ was 50px */
+  width: auto;
+  min-width: 88px;
+  max-width: 140px;
+  height: 40px;
   padding: 0 14px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
   border-radius: 999px;
-  font-weight: 800;          /* ✅ was 999 */
+  font-weight: 800;
   letter-spacing: .2px;
   white-space: nowrap;
 }
 
-/* ✅ Install looks premium */
 #btnInstall{
   background: rgba(0,0,0,.14);
   border: 1px solid rgba(255,255,255,.70);
 }
 #btnInstall:hover{ filter: brightness(1.06); }
 
-/* ✅ Logout more professional */
 .logoutBtn{
   background: rgba(255,255,255,.10);
   border: 1px solid rgba(255,255,255,.18);
@@ -304,7 +300,6 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
   overflow:hidden;
 }
 
-/* clean chatTop */
 .chatTop{
   display:flex;
   align-items:center;
@@ -336,7 +331,6 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
 .chatTitle{ font-weight:900; font-size:17px; line-height:1.2; }
 .chatStatus{ color: var(--muted); font-size:12px; line-height:1.2; margin-top:2px; }
 
-/* messages */
 .messages{
   flex:1;
   padding: 14px 12px;
@@ -391,7 +385,6 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
 .msgInput::placeholder{ color: rgba(255,255,255,.6); }
 .sendBtn{ font-size:18px; }
 
-/* ✅ mobile: buttons thode chhote + brand visible */
 @media (max-width: 420px){
   .topbar{ padding: 12px 12px; }
   .brand{ font-size: 28px; }
@@ -403,8 +396,6 @@ button, .btn, .chatRow, .navBtn, .iconBtn{
     font-size: 14px;
   }
 }
-
-/* small screen tweak (extra small) */
 @media (max-width: 360px){
   .brand{ font-size: 26px; }
   #btnInstall, .logoutBtn{
