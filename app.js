@@ -70,6 +70,7 @@ let currentOther = null;    // { uid, username } | null
 
 let unsubChats = null;
 let unsubMsgs = null;
+let unsubOtherPresence = null;
 
 let isMarkingSeen = false;
 
@@ -106,6 +107,39 @@ function relTime(ts){
   const day = Math.floor(hr/24);
   if(day === 1) return "yesterday";
   return `${day}d ago`;
+}
+
+/* ✅ NEW: user bottom lock helper (scroll jump fix) */
+function isUserNearBottom(el){
+  return el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+}
+
+/* ✅ NEW: Instagram-style seen format */
+function formatSeenFull(ts){
+  if(!ts) return "";
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+
+  const date = d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
+
+  const time = d.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true
+  });
+
+  const diffMin = Math.floor((Date.now() - d.getTime()) / 60000);
+
+  if(diffMin < 1) return `just now • ${date} at ${time}`;
+  if(diffMin < 60) return `${diffMin} min ago • ${date} at ${time}`;
+
+  const diffHr = Math.floor(diffMin / 60);
+  if(diffHr < 24) return `${diffHr}h ago • ${date} at ${time}`;
+
+  return `${date} at ${time}`;
 }
 
 /* ========= Install button (login page only) ========= */
@@ -216,6 +250,7 @@ btnLogout.onclick = async () => {
 onAuthStateChanged(auth, async (user)=>{
   if(unsubChats){ unsubChats(); unsubChats=null; }
   if(unsubMsgs){ unsubMsgs(); unsubMsgs=null; }
+  if(unsubOtherPresence){ unsubOtherPresence(); unsubOtherPresence=null; }
 
   if(!user){
     currentUser = null;
@@ -302,7 +337,7 @@ async function markMessagesAsSeen(chatId){
 
   try{
     const otherUid = currentOther.uid;
-    const q1 = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt", "desc"), limit(200));
+    const q1 = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt", "desc"), limit(250));
     const snap = await getDocs(q1);
 
     const batch = writeBatch(db);
@@ -329,6 +364,10 @@ async function markMessagesAsSeen(chatId){
 
 // open chat
 async function openChat(chatId, other){
+  // ✅ clean old listeners (avoid multiple snapshot)
+  if(unsubMsgs){ unsubMsgs(); unsubMsgs=null; }
+  if(unsubOtherPresence){ unsubOtherPresence(); unsubOtherPresence=null; }
+
   currentChatId = chatId;
   currentOther = other;
 
@@ -342,7 +381,8 @@ async function openChat(chatId, other){
 
   subscribeMessages(chatId);
 
-  onSnapshot(doc(db, "users", other.uid), (snap)=>{
+  // presence listener
+  unsubOtherPresence = onSnapshot(doc(db, "users", other.uid), (snap)=>{
     if(!snap.exists()) return;
     const d = snap.data();
     if(d.online){
@@ -358,6 +398,7 @@ async function openChat(chatId, other){
 // back
 btnBack.onclick = () => {
   if(unsubMsgs){ unsubMsgs(); unsubMsgs=null; }
+  if(unsubOtherPresence){ unsubOtherPresence(); unsubOtherPresence=null; }
   currentChatId = null;
   currentOther = null;
   messagesEl.innerHTML = "";
@@ -420,7 +461,7 @@ function renderChatList(rows){
     div.innerHTML = `
       <div class="avatar">${(r.other.username||"?")[0].toUpperCase()}</div>
       <div class="mid">
-        <div class="name">${r.other.username}</div>
+        <div class="name">${escapeHtml(r.other.username)}</div>
         <div class="last">${escapeHtml(r.lastMessage || "—")}</div>
       </div>
       <div class="right">
@@ -437,12 +478,20 @@ function renderChatList(rows){
   }
 }
 
-// messages
+// ✅ messages (scroll jump fix + instagram seen format)
 function subscribeMessages(chatId){
   if(unsubMsgs) unsubMsgs();
 
-  const q1 = query(collection(db, "chats", chatId, "messages"), orderBy("createdAt", "asc"), limit(200));
+  const q1 = query(
+    collection(db, "chats", chatId, "messages"),
+    orderBy("createdAt", "asc"),
+    limit(300)
+  );
+
   unsubMsgs = onSnapshot(q1, async (snap)=>{
+    // ✅ only autoscroll if user is already near bottom
+    const shouldStickToBottom = isUserNearBottom(messagesEl);
+
     messagesEl.innerHTML = "";
 
     const myUid = currentUser.uid;
@@ -456,7 +505,7 @@ function subscribeMessages(chatId){
       if(isMe && otherUid){
         const seenTs = m.seenBy && m.seenBy[otherUid];
         if(seenTs){
-          seenLabel = `<div class="seen">Seen ${relTime(seenTs)}</div>`;
+          seenLabel = `<div class="seen">Seen ${formatSeenFull(seenTs)}</div>`;
         }
       }
 
@@ -470,7 +519,10 @@ function subscribeMessages(chatId){
       messagesEl.appendChild(bubble);
     });
 
-    messagesEl.scrollTop = messagesEl.scrollHeight;
+    if(shouldStickToBottom){
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
     await markMessagesAsSeen(chatId);
   });
 }
